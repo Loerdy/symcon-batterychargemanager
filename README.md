@@ -2,9 +2,7 @@
 
 [Deutsch](#battery-charge-manager-für-ip-symcon) | [English](#battery-charge-manager-for-ip-symcon)
 
-Diese IP-Symcon-Library stellt eine Grundlage zur automatischen Steuerung eines Ladegeräts anhand des Batteriestands eines Tablets, Smartphones oder eines ähnlichen Akkugeräts bereit.
-
-> **Aktueller Stand:** Das Repository enthält zunächst nur die Modulgrundstruktur und die Konfiguration. Die eigentliche Ladesteuerung ist noch nicht implementiert.
+Diese IP-Symcon-Library steuert ein Ladegerät automatisch anhand des Batteriestands eines Tablets, Smartphones oder eines ähnlichen Akkugeräts.
 
 ## Voraussetzungen
 
@@ -16,14 +14,18 @@ Diese IP-Symcon-Library stellt eine Grundlage zur automatischen Steuerung eines 
 
 ### Akku-Ladesteuerung
 
-Eine Instanz verwaltet genau ein Akkugerät. Vorgesehen sind folgende Einstellungen:
+Eine Instanz verwaltet genau ein Akkugerät. Konfiguriert werden:
 
 - Batterievariable
 - schaltbare Variable des Ladeaktors
 - Einschaltschwelle, standardmäßig 20 %
 - Ausschaltschwelle, standardmäßig 80 %
 
-Die spätere Steuerung soll die Batterievariable ereignisbasiert überwachen. Bei einem Batteriestand kleiner oder gleich der Einschaltschwelle soll der Ladeaktor eingeschaltet werden. Bei einem Batteriestand größer oder gleich der Ausschaltschwelle soll er ausgeschaltet werden. Zwischen den Schwellen bleibt sein Zustand unverändert. Die Einschaltschwelle muss kleiner als die Ausschaltschwelle sein.
+Die Batterievariable wird ereignisbasiert und ohne zyklisches Polling überwacht. Bei einem Batteriestand kleiner oder gleich der Einschaltschwelle wird der Ladeaktor eingeschaltet. Bei einem Batteriestand größer oder gleich der Ausschaltschwelle wird er ausgeschaltet. Zwischen den Schwellen bleibt sein Zustand unverändert. Diese Hysterese verhindert unnötiges Hin- und Herschalten; die Einschaltschwelle muss deshalb kleiner als die Ausschaltschwelle sein.
+
+Nach dem Übernehmen der Konfiguration sowie nach einem Neustart wertet das Modul den aktuellen Batteriestand einmal aus. Ein Schaltbefehl wird nur gesendet, wenn der Ladeaktor noch nicht den gewünschten Zustand hat.
+
+Wird die konfigurierte Batterievariable oder der Ladeaktor während des Betriebs gelöscht, wechselt die Modulinstanz in einen Fehlerzustand und führt keine weitere Schaltung aus.
 
 ## Installation
 
@@ -43,9 +45,7 @@ https://github.com/Loerdy/symcon-batterychargemanager.git
 
 [Deutsch](#battery-charge-manager-für-ip-symcon) | [English](#battery-charge-manager-for-ip-symcon)
 
-This IP-Symcon library provides the foundation for automatically controlling a charger based on the battery level of a tablet, smartphone, or similar battery-powered device.
-
-> **Current status:** The repository currently contains only the basic module structure and configuration. The actual charge-control logic has not been implemented yet.
+This IP-Symcon library automatically controls a charger based on the battery level of a tablet, smartphone, or similar battery-powered device.
 
 ## Requirements
 
@@ -57,14 +57,18 @@ This IP-Symcon library provides the foundation for automatically controlling a c
 
 ### Battery Charge Controller
 
-Each instance manages exactly one battery-powered device. The following settings are planned:
+Each instance manages exactly one battery-powered device. The following settings are configured:
 
 - battery-level variable
 - switchable charger variable
 - switch-on threshold, 20% by default
 - switch-off threshold, 80% by default
 
-The future controller will monitor the battery variable through events. At or below the switch-on threshold, it will switch the charger on. At or above the switch-off threshold, it will switch the charger off. Between the thresholds, the current state remains unchanged. The switch-on threshold must be lower than the switch-off threshold.
+The controller monitors the battery variable through events without periodic polling. At or below the switch-on threshold, it switches the charger on. At or above the switch-off threshold, it switches the charger off. Between the thresholds, the current state remains unchanged. This hysteresis prevents unnecessary switching; the switch-on threshold must therefore be lower than the switch-off threshold.
+
+After applying the configuration and after a restart, the module evaluates the current battery level once. A switching command is sent only when the charger actuator does not already have the desired state.
+
+If the configured battery variable or charger actuator is deleted during operation, the module instance enters an error state and performs no further switching.
 
 ## Installation
 
