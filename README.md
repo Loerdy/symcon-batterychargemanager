@@ -35,6 +35,73 @@ Nach dem Übernehmen der Konfiguration sowie nach einem Neustart wertet das Modu
 
 Wird die konfigurierte Batterievariable oder der Ladeaktor während des Betriebs gelöscht, wechselt die Modulinstanz in einen Fehlerzustand und führt keine weitere Schaltung aus.
 
+## Reset-Aktion in der Visualisierung
+
+Für einen direkten Zugriff aus dem WebFront oder einer Visualisierung kann ein eigenes PHP-Skript angelegt werden. Das Skript wird bewusst nicht automatisch vom Modul erzeugt.
+
+### 1. Skript anlegen
+
+In der IP-Symcon-Objektstruktur die gewünschte Instanz der Akku-Ladesteuerung auswählen und direkt unter dieser Instanz ein neues PHP-Skript anlegen. Als Name wird `Standardwerte wiederherstellen` empfohlen.
+
+### 2. Skriptcode einfügen
+
+Folgenden vollständigen Code in das Skript einfügen:
+
+```php
+<?php
+
+$instanceID = IPS_GetParent($_IPS['SELF']);
+
+if (!IPS_InstanceExists($instanceID)) {
+    throw new RuntimeException(
+        'Die zugehörige BatteryChargeController-Instanz wurde nicht gefunden.'
+    );
+}
+
+$instance = IPS_GetInstance($instanceID);
+
+if (
+    $instance['ModuleInfo']['ModuleID'] !==
+    '{78EEDEC4-F5FD-1BED-5352-3E443FAAF105}'
+) {
+    throw new RuntimeException(
+        'Das Skript ist keiner BatteryChargeController-Instanz untergeordnet.'
+    );
+}
+
+BCMC_ResetThresholds($instanceID);
+```
+
+### 3. Position des Skripts
+
+Das Skript muss direkt unterhalb der zugehörigen BatteryChargeController-/Akku-Ladesteuerungsinstanz liegen:
+
+```text
+Akku-Ladesteuerung
+├── Einschaltschwelle
+├── Ausschaltschwelle
+├── Batteriestand
+├── Ladeaktor
+└── Standardwerte wiederherstellen
+```
+
+Der Skriptcode ermittelt die zugehörige Instanz über `IPS_GetParent($_IPS['SELF'])`. Dadurch muss keine konkrete Instanz-ID in das Skript eingetragen werden.
+
+### 4. Funktion
+
+Beim Ausführen ruft das Skript `BCMC_ResetThresholds($instanceID)` auf. Dadurch werden die Einschaltschwelle auf 20 % und die Ausschaltschwelle auf 80 % zurückgesetzt. Anschließend wird die Modulkonfiguration genau einmal angewendet.
+
+### 5. WebFront und Visualisierung
+
+Das Skript kann anschließend im WebFront beziehungsweise in der Visualisierung als ausführbare Aktion verwendet werden. Optional kann ein Link auf das Skript an der gewünschten Stelle der Visualisierungsstruktur angelegt werden.
+
+### 6. Wichtige Hinweise
+
+- Das Skript gehört dem Benutzer und wird vom Modul weder verändert noch gelöscht.
+- Es wird keine zusätzliche Reset-Variable erzeugt.
+- Wird das Skript aus der Modulinstanz heraus verschoben, funktioniert die automatische Parent-Zuordnung nicht mehr.
+- Für mehrere Akku-Ladesteuerungsinstanzen kann jeweils ein eigenes Skript direkt unter der entsprechenden Instanz angelegt werden.
+
 ## Installation
 
 Das Modul kann über die IP-Symcon-Modulverwaltung aus diesem GitHub-Repository installiert werden:
@@ -85,6 +152,73 @@ The controller monitors the battery variable through the documented IP-Symcon `V
 After applying the configuration and after a restart, the module evaluates the current battery level once. A switching command is sent only when the charger actuator does not already have the desired state.
 
 If the configured battery variable or charger actuator is deleted during operation, the module instance enters an error state and performs no further switching.
+
+## Reset Action in the Visualization
+
+You can create your own PHP script to make the reset directly accessible from the WebFront or another visualization. The module deliberately does not create this script automatically.
+
+### 1. Create the script
+
+Select the desired Battery Charge Controller instance in the IP-Symcon object tree and create a new PHP script directly below that instance. The recommended name is `Restore default values`.
+
+### 2. Add the script code
+
+Insert the following complete code into the script:
+
+```php
+<?php
+
+$instanceID = IPS_GetParent($_IPS['SELF']);
+
+if (!IPS_InstanceExists($instanceID)) {
+    throw new RuntimeException(
+        'The associated BatteryChargeController instance could not be found.'
+    );
+}
+
+$instance = IPS_GetInstance($instanceID);
+
+if (
+    $instance['ModuleInfo']['ModuleID'] !==
+    '{78EEDEC4-F5FD-1BED-5352-3E443FAAF105}'
+) {
+    throw new RuntimeException(
+        'The script is not located below a BatteryChargeController instance.'
+    );
+}
+
+BCMC_ResetThresholds($instanceID);
+```
+
+### 3. Script location
+
+The script must be located directly below the associated Battery Charge Controller instance:
+
+```text
+Battery Charge Controller
+├── Switch-on threshold
+├── Switch-off threshold
+├── Battery level
+├── Charger actuator
+└── Restore default values
+```
+
+The script determines its associated instance through `IPS_GetParent($_IPS['SELF'])`, so no specific instance ID needs to be entered in the script.
+
+### 4. Function
+
+When executed, the script calls `BCMC_ResetThresholds($instanceID)`. This resets the switch-on threshold to 20% and the switch-off threshold to 80%. The module configuration is then applied exactly once.
+
+### 5. WebFront and visualization
+
+The script can then be used as an executable action in the WebFront or visualization. Optionally, you can create a link to the script at the desired location in your visualization structure.
+
+### 6. Important notes
+
+- The script belongs to the user and is neither changed nor deleted by the module.
+- No additional reset variable is created.
+- Moving the script outside the module instance breaks the automatic parent association.
+- For multiple Battery Charge Controller instances, create a separate script directly below each corresponding instance.
 
 ## Installation
 

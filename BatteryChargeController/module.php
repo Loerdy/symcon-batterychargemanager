@@ -60,6 +60,19 @@ class BatteryChargeController extends IPSModule
         $this->evaluateBatteryLevel();
     }
 
+    public function ResetThresholds(): void
+    {
+        if (!IPS_SetProperty($this->InstanceID, 'SwitchOnThreshold', 20)) {
+            throw new RuntimeException('Die Einschaltschwelle konnte nicht zurückgesetzt werden.');
+        }
+        if (!IPS_SetProperty($this->InstanceID, 'SwitchOffThreshold', 80)) {
+            throw new RuntimeException('Die Ausschaltschwelle konnte nicht zurückgesetzt werden.');
+        }
+        if (!IPS_ApplyChanges($this->InstanceID)) {
+            throw new RuntimeException('Die Standardwerte konnten nicht übernommen werden.');
+        }
+    }
+
     public function RequestAction($Ident, $Value): void
     {
         if (!in_array($Ident, ['SwitchOnThreshold', 'SwitchOffThreshold'], true)) {

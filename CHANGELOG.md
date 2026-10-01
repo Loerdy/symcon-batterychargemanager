@@ -12,7 +12,8 @@ The format is based on Keep a Changelog and this project uses semantic versionin
 - Add optional output-only status variables for the battery level and the actual charger actuator state.
 - Add configuration options that create or remove each optional status variable independently.
 - Monitor charger actuator updates when its optional status variable is enabled.
-- Add a configuration button that restores both thresholds to their defaults of 20% and 80% and applies them together.
+- Add a public `ResetThresholds()` method and a configuration button that restore both thresholds to their defaults of 20% and 80% and apply them together.
+- Document how to create a user-managed script for resetting the thresholds from the WebFront or visualization.
 
 ### Changed
 
@@ -20,6 +21,7 @@ The format is based on Keep a Changelog and this project uses semantic versionin
 - Display the optional battery status as an Integer using the `~Battery.100` profile and round Float source values to whole percentages without reducing the precision used by the charge control logic.
 - Reject invalid threshold changes with debug and log messages instead of exposing uncaught exceptions for normal input errors.
 - Use the `~Switch` system profile for the optional charger actuator status.
+- Reuse one public reset method for the configuration button and a user-created visualization script.
 
 ## [0.1.0] - 2026-10-01
 
