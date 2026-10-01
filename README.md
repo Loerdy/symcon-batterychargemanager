@@ -7,8 +7,8 @@ Diese IP-Symcon-Library steuert ein Ladegerät automatisch anhand des Batteriest
 ## Voraussetzungen
 
 - IP-Symcon ab Version 7.0
-- eine in IP-Symcon vorhandene Variable für den Batteriestand
-- eine in IP-Symcon schaltbare Variable für den Ladeaktor
+- eine in IP-Symcon vorhandene Integer- oder Float-Variable für den Batteriestand
+- eine in IP-Symcon vorhandene Boolean-Variable mit Action für den Ladeaktor
 
 ## Enthaltenes Modul
 
@@ -16,12 +16,12 @@ Diese IP-Symcon-Library steuert ein Ladegerät automatisch anhand des Batteriest
 
 Eine Instanz verwaltet genau ein Akkugerät. Konfiguriert werden:
 
-- Batterievariable
-- schaltbare Variable des Ladeaktors
+- Batterievariable vom Typ Integer oder Float
+- Ladeaktor als Boolean-Variable mit Action
 - Einschaltschwelle, standardmäßig 20 %
 - Ausschaltschwelle, standardmäßig 80 %
 
-Die Batterievariable wird ereignisbasiert und ohne zyklisches Polling überwacht. Bei einem Batteriestand kleiner oder gleich der Einschaltschwelle wird der Ladeaktor eingeschaltet. Bei einem Batteriestand größer oder gleich der Ausschaltschwelle wird er ausgeschaltet. Zwischen den Schwellen bleibt sein Zustand unverändert. Diese Hysterese verhindert unnötiges Hin- und Herschalten; die Einschaltschwelle muss deshalb kleiner als die Ausschaltschwelle sein.
+Die Batterievariable wird ereignisbasiert über die dokumentierte IP-Symcon-Nachricht `VM_UPDATE` überwacht. Ein zyklisches Polling findet nicht statt. Bei einem Batteriestand kleiner oder gleich der Einschaltschwelle wird der Ladeaktor eingeschaltet. Bei einem Batteriestand größer oder gleich der Ausschaltschwelle wird er ausgeschaltet. Zwischen den Schwellen bleibt sein Zustand unverändert. Diese Hysterese verhindert unnötiges Hin- und Herschalten; die Einschaltschwelle muss deshalb kleiner als die Ausschaltschwelle sein.
 
 Nach dem Übernehmen der Konfiguration sowie nach einem Neustart wertet das Modul den aktuellen Batteriestand einmal aus. Ein Schaltbefehl wird nur gesendet, wenn der Ladeaktor noch nicht den gewünschten Zustand hat.
 
@@ -50,8 +50,8 @@ This IP-Symcon library automatically controls a charger based on the battery lev
 ## Requirements
 
 - IP-Symcon version 7.0 or later
-- an IP-Symcon variable containing the battery level
-- a switchable IP-Symcon variable controlling the charger
+- an IP-Symcon Integer or Float variable containing the battery level
+- an IP-Symcon Boolean variable with an action controlling the charger
 
 ## Included Module
 
@@ -59,12 +59,12 @@ This IP-Symcon library automatically controls a charger based on the battery lev
 
 Each instance manages exactly one battery-powered device. The following settings are configured:
 
-- battery-level variable
-- switchable charger variable
+- Integer or Float battery-level variable
+- Boolean charger variable with an action
 - switch-on threshold, 20% by default
 - switch-off threshold, 80% by default
 
-The controller monitors the battery variable through events without periodic polling. At or below the switch-on threshold, it switches the charger on. At or above the switch-off threshold, it switches the charger off. Between the thresholds, the current state remains unchanged. This hysteresis prevents unnecessary switching; the switch-on threshold must therefore be lower than the switch-off threshold.
+The controller monitors the battery variable through the documented IP-Symcon `VM_UPDATE` message. It does not use periodic polling. At or below the switch-on threshold, it switches the charger on. At or above the switch-off threshold, it switches the charger off. Between the thresholds, the current state remains unchanged. This hysteresis prevents unnecessary switching; the switch-on threshold must therefore be lower than the switch-off threshold.
 
 After applying the configuration and after a restart, the module evaluates the current battery level once. A switching command is sent only when the charger actuator does not already have the desired state.
 
