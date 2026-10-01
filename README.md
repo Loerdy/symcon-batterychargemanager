@@ -52,20 +52,13 @@ Folgenden vollständigen Code in das Skript einfügen:
 
 $instanceID = IPS_GetParent($_IPS['SELF']);
 
-if (!IPS_InstanceExists($instanceID)) {
-    throw new RuntimeException(
-        'Die zugehörige BatteryChargeController-Instanz wurde nicht gefunden.'
-    );
-}
-
-$instance = IPS_GetInstance($instanceID);
-
 if (
-    $instance['ModuleInfo']['ModuleID'] !==
-    '{78EEDEC4-F5FD-1BED-5352-3E443FAAF105}'
+    !IPS_InstanceExists($instanceID)
+    || IPS_GetInstance($instanceID)['ModuleInfo']['ModuleID']
+        !== '{78EEDEC4-F5FD-1BED-5352-3E443FAAF105}'
 ) {
     throw new RuntimeException(
-        'Das Skript ist keiner BatteryChargeController-Instanz untergeordnet.'
+        'Das Skript muss direkt unter einer BatteryChargeController-Instanz liegen.'
     );
 }
 
@@ -85,7 +78,7 @@ Akku-Ladesteuerung
 └── Standardwerte wiederherstellen
 ```
 
-Der Skriptcode ermittelt die zugehörige Instanz über `IPS_GetParent($_IPS['SELF'])`. Dadurch muss keine konkrete Instanz-ID in das Skript eingetragen werden.
+Der Skriptcode ermittelt die zugehörige Instanz über `IPS_GetParent($_IPS['SELF'])`. Dadurch muss keine konkrete Instanz-ID in das Skript eingetragen werden. Die gemeinsame Prüfung stellt sicher, dass das Skript direkt unter einer BatteryChargeController-Instanz liegt. Durch die Short-Circuit-Auswertung von `||` wird `IPS_GetInstance()` nur aufgerufen, wenn `IPS_InstanceExists()` zuvor `true` geliefert hat.
 
 ### 4. Funktion
 
@@ -170,20 +163,13 @@ Insert the following complete code into the script:
 
 $instanceID = IPS_GetParent($_IPS['SELF']);
 
-if (!IPS_InstanceExists($instanceID)) {
-    throw new RuntimeException(
-        'The associated BatteryChargeController instance could not be found.'
-    );
-}
-
-$instance = IPS_GetInstance($instanceID);
-
 if (
-    $instance['ModuleInfo']['ModuleID'] !==
-    '{78EEDEC4-F5FD-1BED-5352-3E443FAAF105}'
+    !IPS_InstanceExists($instanceID)
+    || IPS_GetInstance($instanceID)['ModuleInfo']['ModuleID']
+        !== '{78EEDEC4-F5FD-1BED-5352-3E443FAAF105}'
 ) {
     throw new RuntimeException(
-        'The script is not located below a BatteryChargeController instance.'
+        'The script must be located directly below a BatteryChargeController instance.'
     );
 }
 
@@ -203,7 +189,7 @@ Battery Charge Controller
 └── Restore default values
 ```
 
-The script determines its associated instance through `IPS_GetParent($_IPS['SELF'])`, so no specific instance ID needs to be entered in the script.
+The script determines its associated instance through `IPS_GetParent($_IPS['SELF'])`, so no specific instance ID needs to be entered in the script. The combined check ensures that the script is located directly below a BatteryChargeController instance. Due to the short-circuit evaluation of `||`, `IPS_GetInstance()` is called only after `IPS_InstanceExists()` has returned `true`.
 
 ### 4. Function
 
