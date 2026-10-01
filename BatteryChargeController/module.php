@@ -28,7 +28,7 @@ class BatteryChargeController extends IPSModule
             return;
         }
 
-        $this->MaintainVariable('BatteryLevel', 'Batteriestand (%)', VARIABLETYPE_FLOAT, '', 30, $this->ReadPropertyBoolean('ShowBatteryLevel'));
+        $this->MaintainVariable('BatteryLevel', 'Batteriestand', VARIABLETYPE_INTEGER, '~Battery.100', 30, $this->ReadPropertyBoolean('ShowBatteryLevel'));
         $this->MaintainVariable('ChargingActorState', 'Ladeaktor', VARIABLETYPE_BOOLEAN, '', 40, $this->ReadPropertyBoolean('ShowChargingActorState'));
         $this->SetValue('SwitchOnThreshold', $this->ReadPropertyInteger('SwitchOnThreshold'));
         $this->SetValue('SwitchOffThreshold', $this->ReadPropertyInteger('SwitchOffThreshold'));
@@ -63,19 +63,31 @@ class BatteryChargeController extends IPSModule
     public function RequestAction($Ident, $Value): void
     {
         if (!in_array($Ident, ['SwitchOnThreshold', 'SwitchOffThreshold'], true)) {
-            throw new InvalidArgumentException('Unbekannter Ident: ' . (string) $Ident);
+            $message = 'Unbekannter Ident: ' . (string) $Ident;
+            $this->SendDebug('RequestAction', $message, 0);
+            $this->LogMessage($message, KL_ERROR);
+            return;
         }
         if (!is_int($Value)) {
-            throw new InvalidArgumentException('Der Schwellwert muss eine Ganzzahl sein.');
+            $message = 'Der Schwellwert muss eine Ganzzahl sein.';
+            $this->SendDebug('ThresholdAction', $message, 0);
+            $this->LogMessage($message, KL_ERROR);
+            return;
         }
         if ($Value < 0 || $Value > 100) {
-            throw new InvalidArgumentException('Der Schwellwert muss zwischen 0 und 100 liegen.');
+            $message = 'Der Schwellwert muss zwischen 0 und 100 liegen.';
+            $this->SendDebug('ThresholdAction', $message, 0);
+            $this->LogMessage($message, KL_WARNING);
+            return;
         }
 
         $switchOnThreshold = $Ident === 'SwitchOnThreshold' ? $Value : $this->ReadPropertyInteger('SwitchOnThreshold');
         $switchOffThreshold = $Ident === 'SwitchOffThreshold' ? $Value : $this->ReadPropertyInteger('SwitchOffThreshold');
         if ($switchOnThreshold >= $switchOffThreshold) {
-            throw new InvalidArgumentException('Die Einschaltschwelle muss kleiner als die Ausschaltschwelle sein.');
+            $message = 'Die Einschaltschwelle muss kleiner als die Ausschaltschwelle sein.';
+            $this->SendDebug('ThresholdAction', $message, 0);
+            $this->LogMessage($message, KL_WARNING);
+            return;
         }
 
         if (!IPS_SetProperty($this->InstanceID, $Ident, $Value)) {
@@ -203,7 +215,7 @@ class BatteryChargeController extends IPSModule
         }
 
         if ($this->ReadPropertyBoolean('ShowBatteryLevel')) {
-            $this->SetValue('BatteryLevel', $batteryLevel);
+            $this->SetValue('BatteryLevel', (int) round($batteryLevel, 0, PHP_ROUND_HALF_UP));
         }
 
         $switchOnThreshold = $this->ReadPropertyInteger('SwitchOnThreshold');

@@ -16,6 +16,8 @@ The format is based on Keep a Changelog and this project uses semantic versionin
 ### Changed
 
 - Validate that both thresholds are within the range from 0% to 100% when applying the configuration or handling an action.
+- Display the optional battery status as an Integer using the `~Battery.100` profile and round Float source values to whole percentages without reducing the precision used by the charge control logic.
+- Reject invalid threshold changes with debug and log messages instead of exposing uncaught exceptions for normal input errors.
 
 ## [0.1.0] - 2026-10-01
 

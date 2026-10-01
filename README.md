@@ -23,7 +23,7 @@ Eine Instanz verwaltet genau ein Akkugerät. Konfiguriert werden:
 
 Die beiden Schwellwerte werden zusätzlich als bedienbare Prozentvariablen unter der Instanz bereitgestellt. Änderungen über diese Variablen werden unmittelbar in die persistente Modulkonfiguration übernommen und für die Ladesteuerung verwendet.
 
-Optional können ein nicht bedienbarer Batteriestatus und ein nicht bedienbarer Ladeaktorstatus unter der Instanz angezeigt werden. Der Batteriestatus übernimmt Integer- und Float-Werte der konfigurierten Batterievariable ohne unnötige Rundung. Der Ladeaktorstatus folgt dem tatsächlichen Zustand der externen Boolean-Variable und berücksichtigt auch externe Zustandsänderungen.
+Optional können ein nicht bedienbarer Batteriestatus und ein nicht bedienbarer Ladeaktorstatus unter der Instanz angezeigt werden. Der Batteriestatus ist eine Integer-Variable mit dem IP-Symcon-Standardprofil `~Battery.100`. Float-Werte der konfigurierten Batterievariable werden für diese Anzeige mathematisch auf volle Prozent gerundet; die Ladesteuerung wertet weiterhin den ursprünglichen präzisen Wert aus. Der Ladeaktorstatus folgt dem tatsächlichen Zustand der externen Boolean-Variable und berücksichtigt auch externe Zustandsänderungen.
 
 Deaktivierte optionale Statusvariablen werden vollständig entfernt und nicht nur ausgeblendet. Beim erneuten Aktivieren kann deshalb eine neue Objekt-ID entstehen; vorhandene Links und Archivzuordnungen können dadurch betroffen sein.
 
@@ -72,7 +72,7 @@ Each instance manages exactly one battery-powered device. The following settings
 
 Both thresholds are also provided as controllable percentage variables below the instance. Changes made through these variables are immediately stored in the persistent module configuration and used by the charge controller.
 
-An output-only battery status and an output-only charger actuator status can be displayed below the instance independently. The battery status preserves Integer and Float values from the configured battery variable without unnecessary rounding. The charger actuator status follows the actual state of the external Boolean variable and also reflects external state changes.
+An output-only battery status and an output-only charger actuator status can be displayed below the instance independently. The battery status is an Integer variable using the IP-Symcon standard profile `~Battery.100`. Float values from the configured battery variable are mathematically rounded to whole percentages for this display; the charge controller continues to evaluate the original precise value. The charger actuator status follows the actual state of the external Boolean variable and also reflects external state changes.
 
 Disabled optional status variables are removed completely instead of merely being hidden. Enabling them again may therefore create a new object ID; existing links and archive assignments may be affected.
 
