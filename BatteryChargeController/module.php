@@ -3,6 +3,16 @@ declare(strict_types=1);
 
 class BatteryChargeController extends IPSModule
 {
+    private const STATUS_BATTERY_VARIABLE_MISSING = 201;
+    private const STATUS_BATTERY_VARIABLE_WRONG_TYPE = 202;
+    private const STATUS_ACTOR_VARIABLE_MISSING = 203;
+    private const STATUS_ACTOR_VARIABLE_WRONG_TYPE = 204;
+    private const STATUS_ACTOR_WITHOUT_ACTION = 205;
+    private const STATUS_THRESHOLDS_OUT_OF_RANGE = 206;
+    private const STATUS_THRESHOLDS_INVALID_ORDER = 207;
+    private const STATUS_MESSAGE_REGISTRATION_FAILED = 208;
+    private const STATUS_MESSAGE_UNREGISTRATION_FAILED = 209;
+
     public function Create(): void
     {
         parent::Create();
@@ -50,7 +60,7 @@ class BatteryChargeController extends IPSModule
         foreach ($registrations as [$senderID, $message]) {
             if (!$this->RegisterMessage($senderID, $message)) {
                 $this->unregisterMonitoredVariableMessages();
-                $this->configurationError(IS_EBASE, 'Die konfigurierten Variablen konnten nicht überwacht werden.');
+                $this->configurationError(self::STATUS_MESSAGE_REGISTRATION_FAILED, 'Die konfigurierten Variablen konnten nicht überwacht werden.');
                 return;
             }
         }
@@ -146,12 +156,12 @@ class BatteryChargeController extends IPSModule
             return;
         }
         if ($SenderID === $batteryVariableID) {
-            $this->SetStatus(IS_EBASE);
+            $this->SetStatus(self::STATUS_BATTERY_VARIABLE_MISSING);
             $this->SendDebug('Configuration', 'Die konfigurierte Batterievariable wurde gelöscht.', 0);
             return;
         }
         if ($SenderID === $chargingActorVariableID) {
-            $this->SetStatus(IS_EBASE);
+            $this->SetStatus(self::STATUS_ACTOR_VARIABLE_MISSING);
             $this->SendDebug('Configuration', 'Der konfigurierte Ladeaktor wurde gelöscht.', 0);
         }
     }
@@ -164,7 +174,7 @@ class BatteryChargeController extends IPSModule
                     continue;
                 }
                 if (!$this->UnregisterMessage((int) $senderID, $message)) {
-                    $this->configurationError(IS_EBASE, 'Eine bisher überwachte Variable konnte nicht abgemeldet werden.');
+                    $this->configurationError(self::STATUS_MESSAGE_UNREGISTRATION_FAILED, 'Eine bisher überwachte Variable konnte nicht abgemeldet werden.');
                     return false;
                 }
             }
@@ -180,12 +190,12 @@ class BatteryChargeController extends IPSModule
             return $this->configurationError(IS_INACTIVE, 'Keine Batterievariable ausgewählt.');
         }
         if (!IPS_VariableExists($batteryVariableID)) {
-            return $this->configurationError(IS_EBASE, 'Die ausgewählte Batterievariable existiert nicht.');
+            return $this->configurationError(self::STATUS_BATTERY_VARIABLE_MISSING, 'Die ausgewählte Batterievariable existiert nicht.');
         }
 
         $batteryVariable = IPS_GetVariable($batteryVariableID);
         if (!in_array($batteryVariable['VariableType'], [VARIABLETYPE_INTEGER, VARIABLETYPE_FLOAT], true)) {
-            return $this->configurationError(IS_EBASE, 'Die Batterievariable muss vom Typ Integer oder Float sein.');
+            return $this->configurationError(self::STATUS_BATTERY_VARIABLE_WRONG_TYPE, 'Die Batterievariable muss vom Typ Integer oder Float sein.');
         }
 
         $chargingActorVariableID = $this->ReadPropertyInteger('ChargingActorVariableID');
@@ -193,24 +203,24 @@ class BatteryChargeController extends IPSModule
             return $this->configurationError(IS_INACTIVE, 'Keine Ladeaktorvariable ausgewählt.');
         }
         if (!IPS_VariableExists($chargingActorVariableID)) {
-            return $this->configurationError(IS_EBASE, 'Die ausgewählte Ladeaktorvariable existiert nicht.');
+            return $this->configurationError(self::STATUS_ACTOR_VARIABLE_MISSING, 'Die ausgewählte Ladeaktorvariable existiert nicht.');
         }
 
         $chargingActorVariable = IPS_GetVariable($chargingActorVariableID);
         if ($chargingActorVariable['VariableType'] !== VARIABLETYPE_BOOLEAN) {
-            return $this->configurationError(IS_EBASE, 'Die Ladeaktorvariable muss vom Typ Boolean sein.');
+            return $this->configurationError(self::STATUS_ACTOR_VARIABLE_WRONG_TYPE, 'Die Ladeaktorvariable muss vom Typ Boolean sein.');
         }
         if (!HasAction($chargingActorVariableID)) {
-            return $this->configurationError(IS_EBASE, 'Die Ladeaktorvariable hat keine Action.');
+            return $this->configurationError(self::STATUS_ACTOR_WITHOUT_ACTION, 'Die Ladeaktorvariable hat keine Action.');
         }
 
         $switchOnThreshold = $this->ReadPropertyInteger('SwitchOnThreshold');
         $switchOffThreshold = $this->ReadPropertyInteger('SwitchOffThreshold');
         if ($switchOnThreshold < 0 || $switchOnThreshold > 100 || $switchOffThreshold < 0 || $switchOffThreshold > 100) {
-            return $this->configurationError(IS_EBASE, 'Die Schwellwerte müssen zwischen 0 und 100 liegen.');
+            return $this->configurationError(self::STATUS_THRESHOLDS_OUT_OF_RANGE, 'Die Schwellwerte müssen zwischen 0 und 100 liegen.');
         }
         if ($switchOnThreshold >= $switchOffThreshold) {
-            return $this->configurationError(IS_EBASE, 'Die Einschaltschwelle muss kleiner als die Ausschaltschwelle sein.');
+            return $this->configurationError(self::STATUS_THRESHOLDS_INVALID_ORDER, 'Die Einschaltschwelle muss kleiner als die Ausschaltschwelle sein.');
         }
 
         return true;
