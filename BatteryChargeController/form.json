@@ -1,0 +1,35 @@
+{
+  "elements": [
+    {
+      "type": "SelectVariable",
+      "name": "BatteryVariableID",
+      "caption": "Batteriestand",
+      "validVariableTypes": [1, 2]
+    },
+    {
+      "type": "SelectVariable",
+      "name": "ChargingActorVariableID",
+      "caption": "Ladeaktor",
+      "validVariableTypes": [0],
+      "requiredAction": 1
+    },
+    {
+      "type": "NumberSpinner",
+      "name": "SwitchOnThreshold",
+      "caption": "Einschaltschwelle",
+      "minimum": 0,
+      "maximum": 100,
+      "suffix": " %"
+    },
+    {
+      "type": "NumberSpinner",
+      "name": "SwitchOffThreshold",
+      "caption": "Ausschaltschwelle",
+      "minimum": 0,
+      "maximum": 100,
+      "suffix": " %"
+    }
+  ],
+  "actions": [],
+  "status": []
+}

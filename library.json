@@ -1,0 +1,12 @@
+{
+  "id": "{A4EC7F46-47B3-8EC4-3719-8D7F65D4BD18}",
+  "author": "Loerdy",
+  "name": "BatteryChargeManager",
+  "url": "https://github.com/Loerdy/symcon-batterychargemanager",
+  "compatibility": {
+    "version": "7.0"
+  },
+  "version": "0.1",
+  "build": 0,
+  "date": 1790812800
+}

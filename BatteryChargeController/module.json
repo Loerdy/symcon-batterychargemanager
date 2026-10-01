@@ -1,0 +1,14 @@
+{
+  "id": "{78EEDEC4-F5FD-1BED-5352-3E443FAAF105}",
+  "name": "BatteryChargeController",
+  "type": 3,
+  "vendor": "",
+  "aliases": [
+    "Akku-Ladesteuerung"
+  ],
+  "url": "https://github.com/Loerdy/symcon-batterychargemanager",
+  "parentRequirements": [],
+  "childRequirements": [],
+  "implemented": [],
+  "prefix": "BCM"
+}
