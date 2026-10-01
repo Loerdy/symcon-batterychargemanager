@@ -29,7 +29,7 @@ class BatteryChargeController extends IPSModule
         }
 
         $this->MaintainVariable('BatteryLevel', 'Batteriestand', VARIABLETYPE_INTEGER, '~Battery.100', 30, $this->ReadPropertyBoolean('ShowBatteryLevel'));
-        $this->MaintainVariable('ChargingActorState', 'Ladeaktor', VARIABLETYPE_BOOLEAN, '', 40, $this->ReadPropertyBoolean('ShowChargingActorState'));
+        $this->MaintainVariable('ChargingActorState', 'Ladeaktor', VARIABLETYPE_BOOLEAN, '~Switch', 40, $this->ReadPropertyBoolean('ShowChargingActorState'));
         $this->SetValue('SwitchOnThreshold', $this->ReadPropertyInteger('SwitchOnThreshold'));
         $this->SetValue('SwitchOffThreshold', $this->ReadPropertyInteger('SwitchOffThreshold'));
 

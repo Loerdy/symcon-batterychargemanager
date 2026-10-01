@@ -40,6 +40,16 @@
       "caption": "Ladeaktorstatus als Statusvariable anzeigen"
     }
   ],
-  "actions": [],
+  "actions": [
+    {
+      "type": "Button",
+      "caption": "Standardwerte wiederherstellen",
+      "onClick": [
+        "if (!IPS_SetProperty($id, 'SwitchOnThreshold', 20)) { throw new RuntimeException('Die Einschaltschwelle konnte nicht zurückgesetzt werden.'); }",
+        "if (!IPS_SetProperty($id, 'SwitchOffThreshold', 80)) { throw new RuntimeException('Die Ausschaltschwelle konnte nicht zurückgesetzt werden.'); }",
+        "if (!IPS_ApplyChanges($id)) { throw new RuntimeException('Die Standardwerte konnten nicht übernommen werden.'); }"
+      ]
+    }
+  ],
   "status": []
 }
