@@ -21,6 +21,12 @@ Eine Instanz verwaltet genau ein Akkugerät. Konfiguriert werden:
 - Einschaltschwelle, standardmäßig 20 %
 - Ausschaltschwelle, standardmäßig 80 %
 
+Die beiden Schwellwerte werden zusätzlich als bedienbare Prozentvariablen unter der Instanz bereitgestellt. Änderungen über diese Variablen werden unmittelbar in die persistente Modulkonfiguration übernommen und für die Ladesteuerung verwendet.
+
+Optional können ein nicht bedienbarer Batteriestatus und ein nicht bedienbarer Ladeaktorstatus unter der Instanz angezeigt werden. Der Batteriestatus übernimmt Integer- und Float-Werte der konfigurierten Batterievariable ohne unnötige Rundung. Der Ladeaktorstatus folgt dem tatsächlichen Zustand der externen Boolean-Variable und berücksichtigt auch externe Zustandsänderungen.
+
+Deaktivierte optionale Statusvariablen werden vollständig entfernt und nicht nur ausgeblendet. Beim erneuten Aktivieren kann deshalb eine neue Objekt-ID entstehen; vorhandene Links und Archivzuordnungen können dadurch betroffen sein.
+
 Die Batterievariable wird ereignisbasiert über die dokumentierte IP-Symcon-Nachricht `VM_UPDATE` überwacht. Ein zyklisches Polling findet nicht statt. Bei einem Batteriestand kleiner oder gleich der Einschaltschwelle wird der Ladeaktor eingeschaltet. Bei einem Batteriestand größer oder gleich der Ausschaltschwelle wird er ausgeschaltet. Zwischen den Schwellen bleibt sein Zustand unverändert. Diese Hysterese verhindert unnötiges Hin- und Herschalten; die Einschaltschwelle muss deshalb kleiner als die Ausschaltschwelle sein.
 
 Nach dem Übernehmen der Konfiguration sowie nach einem Neustart wertet das Modul den aktuellen Batteriestand einmal aus. Ein Schaltbefehl wird nur gesendet, wenn der Ladeaktor noch nicht den gewünschten Zustand hat.
@@ -63,6 +69,12 @@ Each instance manages exactly one battery-powered device. The following settings
 - Boolean charger variable with an action
 - switch-on threshold, 20% by default
 - switch-off threshold, 80% by default
+
+Both thresholds are also provided as controllable percentage variables below the instance. Changes made through these variables are immediately stored in the persistent module configuration and used by the charge controller.
+
+An output-only battery status and an output-only charger actuator status can be displayed below the instance independently. The battery status preserves Integer and Float values from the configured battery variable without unnecessary rounding. The charger actuator status follows the actual state of the external Boolean variable and also reflects external state changes.
+
+Disabled optional status variables are removed completely instead of merely being hidden. Enabling them again may therefore create a new object ID; existing links and archive assignments may be affected.
 
 The controller monitors the battery variable through the documented IP-Symcon `VM_UPDATE` message. It does not use periodic polling. At or below the switch-on threshold, it switches the charger on. At or above the switch-off threshold, it switches the charger off. Between the thresholds, the current state remains unchanged. This hysteresis prevents unnecessary switching; the switch-on threshold must therefore be lower than the switch-off threshold.
 

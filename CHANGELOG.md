@@ -6,6 +6,17 @@ The format is based on Keep a Changelog and this project uses semantic versionin
 
 ## [Unreleased]
 
+### Added
+
+- Add controllable instance variables for the switch-on and switch-off thresholds and persist changes in the module configuration.
+- Add optional output-only status variables for the battery level and the actual charger actuator state.
+- Add configuration options that create or remove each optional status variable independently.
+- Monitor charger actuator updates when its optional status variable is enabled.
+
+### Changed
+
+- Validate that both thresholds are within the range from 0% to 100% when applying the configuration or handling an action.
+
 ## [0.1.0] - 2026-10-01
 
 ### Added

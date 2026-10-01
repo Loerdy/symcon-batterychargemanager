@@ -28,6 +28,16 @@
       "minimum": 0,
       "maximum": 100,
       "suffix": " %"
+    },
+    {
+      "type": "CheckBox",
+      "name": "ShowBatteryLevel",
+      "caption": "Batteriestand als Statusvariable anzeigen"
+    },
+    {
+      "type": "CheckBox",
+      "name": "ShowChargingActorState",
+      "caption": "Ladeaktorstatus als Statusvariable anzeigen"
     }
   ],
   "actions": [],
