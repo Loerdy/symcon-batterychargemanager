@@ -88,18 +88,35 @@ class BatteryChargeController extends IPSModule
             return;
         }
         if ($Value < 0 || $Value > 100) {
-            $message = 'Der Schwellwert muss zwischen 0 und 100 liegen.';
+            $message = sprintf(
+                'Der Schwellwert kann nicht auf %d %% gesetzt werden. Zulässig sind Werte zwischen 0 %% und 100 %%.',
+                $Value
+            );
             $this->SendDebug('ThresholdAction', $message, 0);
             $this->LogMessage($message, KL_WARNING);
+            echo $message;
             return;
         }
 
         $switchOnThreshold = $Ident === 'SwitchOnThreshold' ? $Value : $this->ReadPropertyInteger('SwitchOnThreshold');
         $switchOffThreshold = $Ident === 'SwitchOffThreshold' ? $Value : $this->ReadPropertyInteger('SwitchOffThreshold');
         if ($switchOnThreshold >= $switchOffThreshold) {
-            $message = 'Die Einschaltschwelle muss kleiner als die Ausschaltschwelle sein.';
+            if ($Ident === 'SwitchOnThreshold') {
+                $message = sprintf(
+                    'Die Einschaltschwelle kann nicht auf %d %% gesetzt werden. Sie muss kleiner als die Ausschaltschwelle von %d %% sein.',
+                    $Value,
+                    $switchOffThreshold
+                );
+            } else {
+                $message = sprintf(
+                    'Die Ausschaltschwelle kann nicht auf %d %% gesetzt werden. Sie muss größer als die Einschaltschwelle von %d %% sein.',
+                    $Value,
+                    $switchOnThreshold
+                );
+            }
             $this->SendDebug('ThresholdAction', $message, 0);
             $this->LogMessage($message, KL_WARNING);
+            echo $message;
             return;
         }
 

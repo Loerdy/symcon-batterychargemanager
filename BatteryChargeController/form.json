@@ -48,5 +48,11 @@
       "onClick": "BCMC_ResetThresholds($id);"
     }
   ],
-  "status": []
+  "status": [
+    {
+      "code": 200,
+      "icon": "error",
+      "caption": "Fehlerhafte Konfiguration"
+    }
+  ]
 }

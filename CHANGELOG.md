@@ -20,6 +20,8 @@ The format is based on Keep a Changelog and this project uses semantic versionin
 - Validate that both thresholds are within the range from 0% to 100% when applying the configuration or handling an action.
 - Display the optional battery status as an Integer using the `~Battery.100` profile and round Float source values to whole percentages without reducing the precision used by the charge control logic.
 - Reject invalid threshold changes with debug and log messages instead of exposing uncaught exceptions for normal input errors.
+- Return understandable validation messages to the visualization when threshold actions are rejected.
+- Describe the module's general error status 200 in the configuration form.
 - Use the `~Switch` system profile for the optional charger actuator status.
 - Reuse one public reset method for the configuration button and a user-created visualization script.
 
