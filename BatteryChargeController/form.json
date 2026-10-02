@@ -28,8 +28,71 @@
       "minimum": 0,
       "maximum": 100,
       "suffix": " %"
+    },
+    {
+      "type": "CheckBox",
+      "name": "ShowBatteryLevel",
+      "caption": "Batteriestand als Statusvariable anzeigen"
+    },
+    {
+      "type": "CheckBox",
+      "name": "ShowChargingActorState",
+      "caption": "Ladeaktorstatus als Statusvariable anzeigen"
     }
   ],
-  "actions": [],
-  "status": []
+  "actions": [
+    {
+      "type": "Button",
+      "caption": "Standardwerte wiederherstellen",
+      "confirm": "Einschaltschwelle auf 20 % und Ausschaltschwelle auf 80 % zurücksetzen?",
+      "onClick": "BCMC_ResetThresholds($id);"
+    }
+  ],
+  "status": [
+    {
+      "code": 201,
+      "icon": "error",
+      "caption": "Die ausgewählte Batterievariable existiert nicht."
+    },
+    {
+      "code": 202,
+      "icon": "error",
+      "caption": "Die Batterievariable muss vom Typ Integer oder Float sein."
+    },
+    {
+      "code": 203,
+      "icon": "error",
+      "caption": "Die ausgewählte Ladeaktorvariable existiert nicht."
+    },
+    {
+      "code": 204,
+      "icon": "error",
+      "caption": "Die Ladeaktorvariable muss vom Typ Boolean sein."
+    },
+    {
+      "code": 205,
+      "icon": "error",
+      "caption": "Die Ladeaktorvariable besitzt keine Action."
+    },
+    {
+      "code": 206,
+      "icon": "error",
+      "caption": "Die Schwellwerte müssen zwischen 0 und 100 % liegen."
+    },
+    {
+      "code": 207,
+      "icon": "error",
+      "caption": "Die Einschaltschwelle muss kleiner als die Ausschaltschwelle sein."
+    },
+    {
+      "code": 208,
+      "icon": "error",
+      "caption": "Die Überwachung der konfigurierten Variablen konnte nicht eingerichtet werden."
+    },
+    {
+      "code": 209,
+      "icon": "error",
+      "caption": "Eine bisher überwachte Variable konnte nicht abgemeldet werden."
+    }
+  ]
 }

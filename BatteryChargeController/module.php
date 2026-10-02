@@ -3,6 +3,16 @@ declare(strict_types=1);
 
 class BatteryChargeController extends IPSModule
 {
+    private const STATUS_BATTERY_VARIABLE_MISSING = 201;
+    private const STATUS_BATTERY_VARIABLE_WRONG_TYPE = 202;
+    private const STATUS_ACTOR_VARIABLE_MISSING = 203;
+    private const STATUS_ACTOR_VARIABLE_WRONG_TYPE = 204;
+    private const STATUS_ACTOR_WITHOUT_ACTION = 205;
+    private const STATUS_THRESHOLDS_OUT_OF_RANGE = 206;
+    private const STATUS_THRESHOLDS_INVALID_ORDER = 207;
+    private const STATUS_MESSAGE_REGISTRATION_FAILED = 208;
+    private const STATUS_MESSAGE_UNREGISTRATION_FAILED = 209;
+
     public function Create(): void
     {
         parent::Create();
@@ -11,6 +21,13 @@ class BatteryChargeController extends IPSModule
         $this->RegisterPropertyInteger('ChargingActorVariableID', 0);
         $this->RegisterPropertyInteger('SwitchOnThreshold', 20);
         $this->RegisterPropertyInteger('SwitchOffThreshold', 80);
+        $this->RegisterPropertyBoolean('ShowBatteryLevel', false);
+        $this->RegisterPropertyBoolean('ShowChargingActorState', false);
+
+        $this->RegisterVariableInteger('SwitchOnThreshold', 'Einschaltschwelle', '~Intensity.100', 10);
+        $this->EnableAction('SwitchOnThreshold');
+        $this->RegisterVariableInteger('SwitchOffThreshold', 'Ausschaltschwelle', '~Intensity.100', 20);
+        $this->EnableAction('SwitchOffThreshold');
     }
 
     public function ApplyChanges(): void
@@ -20,6 +37,11 @@ class BatteryChargeController extends IPSModule
         if (!$this->unregisterMonitoredVariableMessages()) {
             return;
         }
+
+        $this->MaintainVariable('BatteryLevel', 'Batteriestand', VARIABLETYPE_INTEGER, '~Battery.100', 30, $this->ReadPropertyBoolean('ShowBatteryLevel'));
+        $this->MaintainVariable('ChargingActorState', 'Ladeaktor', VARIABLETYPE_BOOLEAN, '~Switch', 40, $this->ReadPropertyBoolean('ShowChargingActorState'));
+        $this->SetValue('SwitchOnThreshold', $this->ReadPropertyInteger('SwitchOnThreshold'));
+        $this->SetValue('SwitchOffThreshold', $this->ReadPropertyInteger('SwitchOffThreshold'));
 
         if (!$this->validateConfiguration()) {
             return;
@@ -32,16 +54,88 @@ class BatteryChargeController extends IPSModule
             [$batteryVariableID, VM_DELETE],
             [$chargingActorVariableID, VM_DELETE]
         ];
+        if ($this->ReadPropertyBoolean('ShowChargingActorState')) {
+            $registrations[] = [$chargingActorVariableID, VM_UPDATE];
+        }
         foreach ($registrations as [$senderID, $message]) {
             if (!$this->RegisterMessage($senderID, $message)) {
                 $this->unregisterMonitoredVariableMessages();
-                $this->configurationError(IS_EBASE, 'Die konfigurierten Variablen konnten nicht überwacht werden.');
+                $this->configurationError(self::STATUS_MESSAGE_REGISTRATION_FAILED, 'Die konfigurierten Variablen konnten nicht überwacht werden.');
                 return;
             }
         }
         $this->SetStatus(IS_ACTIVE);
 
+        $this->updateChargingActorState();
         $this->evaluateBatteryLevel();
+    }
+
+    public function ResetThresholds(): void
+    {
+        if (!IPS_SetProperty($this->InstanceID, 'SwitchOnThreshold', 20)) {
+            throw new RuntimeException('Die Einschaltschwelle konnte nicht zurückgesetzt werden.');
+        }
+        if (!IPS_SetProperty($this->InstanceID, 'SwitchOffThreshold', 80)) {
+            throw new RuntimeException('Die Ausschaltschwelle konnte nicht zurückgesetzt werden.');
+        }
+        if (!IPS_ApplyChanges($this->InstanceID)) {
+            throw new RuntimeException('Die Standardwerte konnten nicht übernommen werden.');
+        }
+    }
+
+    public function RequestAction($Ident, $Value): void
+    {
+        if (!in_array($Ident, ['SwitchOnThreshold', 'SwitchOffThreshold'], true)) {
+            $message = 'Unbekannter Ident: ' . (string) $Ident;
+            $this->SendDebug('RequestAction', $message, 0);
+            $this->LogMessage($message, KL_ERROR);
+            return;
+        }
+        if (!is_int($Value)) {
+            $message = 'Der Schwellwert muss eine Ganzzahl sein.';
+            $this->SendDebug('ThresholdAction', $message, 0);
+            $this->LogMessage($message, KL_ERROR);
+            return;
+        }
+        if ($Value < 0 || $Value > 100) {
+            $message = sprintf(
+                'Der Schwellwert kann nicht auf %d %% gesetzt werden. Zulässig sind Werte zwischen 0 %% und 100 %%.',
+                $Value
+            );
+            $this->SendDebug('ThresholdAction', $message, 0);
+            $this->LogMessage($message, KL_WARNING);
+            echo $message;
+            return;
+        }
+
+        $switchOnThreshold = $Ident === 'SwitchOnThreshold' ? $Value : $this->ReadPropertyInteger('SwitchOnThreshold');
+        $switchOffThreshold = $Ident === 'SwitchOffThreshold' ? $Value : $this->ReadPropertyInteger('SwitchOffThreshold');
+        if ($switchOnThreshold >= $switchOffThreshold) {
+            if ($Ident === 'SwitchOnThreshold') {
+                $message = sprintf(
+                    'Die Einschaltschwelle kann nicht auf %d %% gesetzt werden. Sie muss kleiner als die Ausschaltschwelle von %d %% sein.',
+                    $Value,
+                    $switchOffThreshold
+                );
+            } else {
+                $message = sprintf(
+                    'Die Ausschaltschwelle kann nicht auf %d %% gesetzt werden. Sie muss größer als die Einschaltschwelle von %d %% sein.',
+                    $Value,
+                    $switchOnThreshold
+                );
+            }
+            $this->SendDebug('ThresholdAction', $message, 0);
+            $this->LogMessage($message, KL_WARNING);
+            echo $message;
+            return;
+        }
+
+        if (!IPS_SetProperty($this->InstanceID, $Ident, $Value)) {
+            throw new RuntimeException('Der Schwellwert konnte nicht gespeichert werden.');
+        }
+        if (!IPS_ApplyChanges($this->InstanceID)) {
+            throw new RuntimeException('Der geänderte Schwellwert konnte nicht übernommen werden.');
+        }
     }
 
     public function MessageSink($TimeStamp, $SenderID, $Message, $Data): void
@@ -53,17 +147,21 @@ class BatteryChargeController extends IPSModule
             $this->evaluateBatteryLevel();
             return;
         }
+        if ($Message === VM_UPDATE && $SenderID === $chargingActorVariableID) {
+            $this->updateChargingActorState();
+            return;
+        }
 
         if ($Message !== VM_DELETE) {
             return;
         }
         if ($SenderID === $batteryVariableID) {
-            $this->SetStatus(IS_EBASE);
+            $this->SetStatus(self::STATUS_BATTERY_VARIABLE_MISSING);
             $this->SendDebug('Configuration', 'Die konfigurierte Batterievariable wurde gelöscht.', 0);
             return;
         }
         if ($SenderID === $chargingActorVariableID) {
-            $this->SetStatus(IS_EBASE);
+            $this->SetStatus(self::STATUS_ACTOR_VARIABLE_MISSING);
             $this->SendDebug('Configuration', 'Der konfigurierte Ladeaktor wurde gelöscht.', 0);
         }
     }
@@ -76,7 +174,7 @@ class BatteryChargeController extends IPSModule
                     continue;
                 }
                 if (!$this->UnregisterMessage((int) $senderID, $message)) {
-                    $this->configurationError(IS_EBASE, 'Eine bisher überwachte Variable konnte nicht abgemeldet werden.');
+                    $this->configurationError(self::STATUS_MESSAGE_UNREGISTRATION_FAILED, 'Eine bisher überwachte Variable konnte nicht abgemeldet werden.');
                     return false;
                 }
             }
@@ -92,12 +190,12 @@ class BatteryChargeController extends IPSModule
             return $this->configurationError(IS_INACTIVE, 'Keine Batterievariable ausgewählt.');
         }
         if (!IPS_VariableExists($batteryVariableID)) {
-            return $this->configurationError(IS_EBASE, 'Die ausgewählte Batterievariable existiert nicht.');
+            return $this->configurationError(self::STATUS_BATTERY_VARIABLE_MISSING, 'Die ausgewählte Batterievariable existiert nicht.');
         }
 
         $batteryVariable = IPS_GetVariable($batteryVariableID);
         if (!in_array($batteryVariable['VariableType'], [VARIABLETYPE_INTEGER, VARIABLETYPE_FLOAT], true)) {
-            return $this->configurationError(IS_EBASE, 'Die Batterievariable muss vom Typ Integer oder Float sein.');
+            return $this->configurationError(self::STATUS_BATTERY_VARIABLE_WRONG_TYPE, 'Die Batterievariable muss vom Typ Integer oder Float sein.');
         }
 
         $chargingActorVariableID = $this->ReadPropertyInteger('ChargingActorVariableID');
@@ -105,21 +203,24 @@ class BatteryChargeController extends IPSModule
             return $this->configurationError(IS_INACTIVE, 'Keine Ladeaktorvariable ausgewählt.');
         }
         if (!IPS_VariableExists($chargingActorVariableID)) {
-            return $this->configurationError(IS_EBASE, 'Die ausgewählte Ladeaktorvariable existiert nicht.');
+            return $this->configurationError(self::STATUS_ACTOR_VARIABLE_MISSING, 'Die ausgewählte Ladeaktorvariable existiert nicht.');
         }
 
         $chargingActorVariable = IPS_GetVariable($chargingActorVariableID);
         if ($chargingActorVariable['VariableType'] !== VARIABLETYPE_BOOLEAN) {
-            return $this->configurationError(IS_EBASE, 'Die Ladeaktorvariable muss vom Typ Boolean sein.');
+            return $this->configurationError(self::STATUS_ACTOR_VARIABLE_WRONG_TYPE, 'Die Ladeaktorvariable muss vom Typ Boolean sein.');
         }
         if (!HasAction($chargingActorVariableID)) {
-            return $this->configurationError(IS_EBASE, 'Die Ladeaktorvariable hat keine Action.');
+            return $this->configurationError(self::STATUS_ACTOR_WITHOUT_ACTION, 'Die Ladeaktorvariable hat keine Action.');
         }
 
         $switchOnThreshold = $this->ReadPropertyInteger('SwitchOnThreshold');
         $switchOffThreshold = $this->ReadPropertyInteger('SwitchOffThreshold');
+        if ($switchOnThreshold < 0 || $switchOnThreshold > 100 || $switchOffThreshold < 0 || $switchOffThreshold > 100) {
+            return $this->configurationError(self::STATUS_THRESHOLDS_OUT_OF_RANGE, 'Die Schwellwerte müssen zwischen 0 und 100 liegen.');
+        }
         if ($switchOnThreshold >= $switchOffThreshold) {
-            return $this->configurationError(IS_EBASE, 'Die Einschaltschwelle muss kleiner als die Ausschaltschwelle sein.');
+            return $this->configurationError(self::STATUS_THRESHOLDS_INVALID_ORDER, 'Die Einschaltschwelle muss kleiner als die Ausschaltschwelle sein.');
         }
 
         return true;
@@ -153,6 +254,10 @@ class BatteryChargeController extends IPSModule
             return;
         }
 
+        if ($this->ReadPropertyBoolean('ShowBatteryLevel')) {
+            $this->SetValue('BatteryLevel', (int) round($batteryLevel, 0, PHP_ROUND_HALF_UP));
+        }
+
         $switchOnThreshold = $this->ReadPropertyInteger('SwitchOnThreshold');
         $switchOffThreshold = $this->ReadPropertyInteger('SwitchOffThreshold');
         $this->SendDebug(
@@ -174,6 +279,23 @@ class BatteryChargeController extends IPSModule
         }
 
         $this->SendDebug('Decision', 'Innerhalb der Hysterese, keine Änderung.', 0);
+    }
+
+    private function updateChargingActorState(): void
+    {
+        if (!$this->ReadPropertyBoolean('ShowChargingActorState')) {
+            return;
+        }
+
+        $chargingActorVariableID = $this->ReadPropertyInteger('ChargingActorVariableID');
+        if (!IPS_VariableExists($chargingActorVariableID)) {
+            return;
+        }
+
+        $chargingActorState = GetValue($chargingActorVariableID);
+        if (is_bool($chargingActorState)) {
+            $this->SetValue('ChargingActorState', $chargingActorState);
+        }
     }
 
     private function setChargingActorState(int $chargingActorVariableID, bool $desiredState): void
