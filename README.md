@@ -6,7 +6,7 @@ Diese IP-Symcon-Library steuert ein Ladegerät automatisch anhand des Batteriest
 
 ## Voraussetzungen
 
-- IP-Symcon ab Version 7.0
+- IP-Symcon ab Version 7.1
 - eine in IP-Symcon vorhandene Integer- oder Float-Variable für den Batteriestand
 - eine in IP-Symcon vorhandene Boolean-Variable mit Action für den Ladeaktor
 
@@ -29,6 +29,14 @@ Die beiden Schwellwerte werden zusätzlich als bedienbare Prozentvariablen unter
 Optional können ein nicht bedienbarer Batteriestatus und ein nicht bedienbarer Ladeaktorstatus unter der Instanz angezeigt werden. Der Batteriestatus ist eine Integer-Variable mit dem IP-Symcon-Standardprofil `~Battery.100`. Float-Werte der konfigurierten Batterievariable werden für diese Anzeige mathematisch auf volle Prozent gerundet; die Ladesteuerung wertet weiterhin den ursprünglichen präzisen Wert aus. Der Ladeaktorstatus verwendet das IP-Symcon-Systemprofil `~Switch`, folgt dem tatsächlichen Zustand der externen Boolean-Variable und berücksichtigt auch externe Zustandsänderungen.
 
 Deaktivierte optionale Statusvariablen werden vollständig entfernt und nicht nur ausgeblendet. Beim erneuten Aktivieren kann deshalb eine neue Objekt-ID entstehen; vorhandene Links und Archivzuordnungen können dadurch betroffen sein.
+
+### Kachel in der Visualisierung
+
+Die Instanz bringt eine eigene Kachel für die Visualisierung mit. Sie zeigt eine hochkant stehende Batterie, deren Füllstand dem aktuellen Batteriestand entspricht. Liegt der Batteriestand auf oder unter der Einschaltschwelle, wird die Füllung rot dargestellt, sonst grün. Gestrichelte Markierungen zeigen die aktive Einschalt- und Ausschaltschwelle an der passenden Höhe der Batterie. Neben der Batterie werden der Batteriestand in Prozent und der Zustand des Ladeaktors angezeigt; während der Ladeaktor eingeschaltet ist, erscheint zusätzlich ein Blitzsymbol in der Batterie.
+
+Die beiden aktiven Schwellwerte können direkt in der Kachel über die Schaltflächen − und + in 1-%-Schritten angepasst werden. Es gelten dieselben Regeln wie für die Schwellwert-Variablen; Schaltflächen, die zu einer ungültigen Kombination führen würden, sind deaktiviert. Greift der Watchdog oder ist die Instanz nicht aktiv, zeigt die Kachel einen Hinweis an.
+
+Der Zustand des Ladeaktors wird dafür unabhängig von der Option für die Statusvariable ereignisbasiert über `VM_UPDATE` überwacht.
 
 Die Batterievariable wird ereignisbasiert über die dokumentierte IP-Symcon-Nachricht `VM_UPDATE` überwacht. Ein zyklisches Polling findet nicht statt. Bei einem Batteriestand kleiner oder gleich der Einschaltschwelle wird der Ladeaktor eingeschaltet. Bei einem Batteriestand größer oder gleich der Ausschaltschwelle wird er ausgeschaltet. Zwischen den Schwellen bleibt sein Zustand unverändert. Diese Hysterese verhindert unnötiges Hin- und Herschalten; die Einschaltschwelle muss deshalb kleiner als die Ausschaltschwelle sein.
 
@@ -126,7 +134,7 @@ This IP-Symcon library automatically controls a charger based on the battery lev
 
 ## Requirements
 
-- IP-Symcon version 7.0 or later
+- IP-Symcon version 7.1 or later
 - an IP-Symcon Integer or Float variable containing the battery level
 - an IP-Symcon Boolean variable with an action controlling the charger
 
@@ -149,6 +157,14 @@ The active thresholds can be reset together to their defaults of 20% and 80% thr
 An output-only battery status and an output-only charger actuator status can be displayed below the instance independently. The battery status is an Integer variable using the IP-Symcon standard profile `~Battery.100`. Float values from the configured battery variable are mathematically rounded to whole percentages for this display; the charge controller continues to evaluate the original precise value. The charger actuator status uses the IP-Symcon system profile `~Switch`, follows the actual state of the external Boolean variable, and also reflects external state changes.
 
 Disabled optional status variables are removed completely instead of merely being hidden. Enabling them again may therefore create a new object ID; existing links and archive assignments may be affected.
+
+### Visualization Tile
+
+The instance provides its own tile for the visualization. It shows an upright battery whose fill level matches the current battery level. At or below the switch-on threshold, the fill is shown in red, otherwise in green. Dashed markers show the active switch-on and switch-off thresholds at the corresponding height of the battery. Next to the battery, the battery level in percent and the state of the charger actuator are displayed; while the charger actuator is switched on, a lightning symbol additionally appears inside the battery.
+
+Both active thresholds can be adjusted directly in the tile using the − and + buttons in steps of 1%. The same rules apply as for the threshold variables; buttons that would lead to an invalid combination are disabled. If the watchdog has triggered or the instance is not active, the tile displays a notice.
+
+For this purpose, the state of the charger actuator is monitored event-based via `VM_UPDATE`, independently of the status variable option.
 
 The controller monitors the battery variable through the documented IP-Symcon `VM_UPDATE` message. It does not use periodic polling. At or below the switch-on threshold, it switches the charger on. At or above the switch-off threshold, it switches the charger off. Between the thresholds, the current state remains unchanged. This hysteresis prevents unnecessary switching; the switch-on threshold must therefore be lower than the switch-off threshold.
 

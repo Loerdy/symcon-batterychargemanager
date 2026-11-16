@@ -11,6 +11,7 @@ The format is based on Keep a Changelog and this project uses semantic versionin
 - Add an optional battery level watchdog that switches the charger actuator off and sets an error status when the battery variable has not been updated within a configurable number of minutes.
 - Add a German translation of the configuration form, status messages, variable names, and log messages through `locale.json`.
 - Write a warning to the message log when a switching command for the charger actuator fails.
+- Add a visualization tile (HTML-SDK) showing an upright battery with fill level, threshold markers, battery level, and charger state, with buttons to adjust the active thresholds.
 
 ### Changed
 
@@ -18,6 +19,8 @@ The format is based on Keep a Changelog and this project uses semantic versionin
 - Store the active thresholds in the threshold variables instead of writing them back to the module configuration, as required by the Module Store guidelines. Thresholds changed in the configuration form are copied to the variables when applied.
 - `ResetThresholds()` and the configuration button now reset the active thresholds without changing the module configuration.
 - Use English as the base language for all texts in the module.
+- Always monitor charger actuator updates so that the visualization tile shows the current state.
+- Require IP-Symcon 7.1 or later, which is needed for the HTML-SDK.
 
 ## [1.0.0] - 2026-10-01
 

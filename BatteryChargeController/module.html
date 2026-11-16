@@ -1,0 +1,309 @@
+<style>
+    html, body {
+        margin: 0;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    /* Font and text color are inherited from the visualization; only signal colors are fixed. */
+    body {
+        --outline: color-mix(in srgb, currentColor 55%, transparent);
+        --empty: color-mix(in srgb, currentColor 10%, transparent);
+        --ok: #34a853;
+        --low: #e5484d;
+        --marker: #3b82f6;
+        --warning: #e8a317;
+    }
+
+    .tile {
+        box-sizing: border-box;
+        display: flex;
+        gap: 6%;
+        align-items: stretch;
+        height: 100%;
+        padding: 8px;
+    }
+
+    .battery-wrap {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 0 0 auto;
+        height: 100%;
+        padding-right: 2.6em;
+    }
+
+    .cap {
+        width: 36%;
+        height: 5%;
+        min-height: 4px;
+        background: var(--outline);
+        border-radius: 3px 3px 0 0;
+    }
+
+    .body {
+        position: relative;
+        flex: 0 0 auto;
+        height: 95%;
+        aspect-ratio: 9 / 20;
+        border: 3px solid var(--outline);
+        border-radius: 8px;
+        background: var(--empty);
+        box-sizing: border-box;
+    }
+
+    .inner {
+        position: absolute;
+        inset: 3px;
+        overflow: hidden;
+        border-radius: 4px;
+    }
+
+    .fill {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 0;
+        background: var(--ok);
+        transition: height 0.6s ease, background-color 0.3s ease;
+    }
+
+    .fill.low {
+        background: var(--low);
+    }
+
+    .bolt {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 40%;
+        transform: translate(-50%, -50%);
+        fill: #ffffff;
+        stroke: rgba(0, 0, 0, 0.35);
+        stroke-width: 1;
+        display: none;
+    }
+
+    .bolt.visible {
+        display: block;
+    }
+
+    .marker {
+        position: absolute;
+        left: -3px;
+        right: -3px;
+        height: 0;
+        border-top: 2px dashed var(--marker);
+        transition: bottom 0.3s ease;
+    }
+
+    .marker-label {
+        position: absolute;
+        left: 100%;
+        transform: translateY(-50%);
+        margin-left: 6px;
+        font-size: 0.75em;
+        color: var(--marker);
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .info {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 6px;
+        min-width: 0;
+        flex: 1;
+    }
+
+    .level {
+        font-size: 2em;
+        font-weight: 600;
+        line-height: 1.1;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .charger {
+        font-size: 0.95em;
+        opacity: 0.7;
+    }
+
+    .charger.active {
+        color: var(--ok);
+        font-weight: 600;
+        opacity: 1;
+    }
+
+    .notice {
+        font-size: 0.85em;
+        color: var(--warning);
+        display: none;
+    }
+
+    .notice.visible {
+        display: block;
+    }
+
+    .threshold {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        font-size: 0.85em;
+    }
+
+    .threshold-label {
+        max-width: 100%;
+        opacity: 0.7;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .stepper {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex: 0 0 auto;
+    }
+
+    .stepper span {
+        min-width: 3.2em;
+        text-align: center;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .stepper button {
+        width: 1.9em;
+        height: 1.9em;
+        padding: 0;
+        border: 1px solid var(--outline);
+        border-radius: 50%;
+        background: transparent;
+        color: inherit;
+        font-size: 1em;
+        line-height: 1;
+        cursor: pointer;
+    }
+
+    .stepper button:disabled {
+        opacity: 0.35;
+        cursor: default;
+    }
+</style>
+
+<div class="tile">
+    <div class="battery-wrap">
+        <div class="cap"></div>
+        <div class="body">
+            <div class="inner">
+                <div class="fill" id="fill"></div>
+                <svg class="bolt" id="bolt" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M13 2 4 14h7l-1 8 9-12h-7z"></path>
+                </svg>
+            </div>
+            <div class="marker" id="markerOff"><span class="marker-label" id="markerOffLabel"></span></div>
+            <div class="marker" id="markerOn"><span class="marker-label" id="markerOnLabel"></span></div>
+        </div>
+    </div>
+    <div class="info">
+        <div class="level" id="level">–</div>
+        <div class="charger" id="charger"></div>
+        <div class="notice" id="notice"></div>
+        <div class="threshold">
+            <span class="threshold-label" id="labelOff"></span>
+            <div class="stepper">
+                <button type="button" id="offMinus" aria-label="-">−</button>
+                <span id="valueOff">–</span>
+                <button type="button" id="offPlus" aria-label="+">+</button>
+            </div>
+        </div>
+        <div class="threshold">
+            <span class="threshold-label" id="labelOn"></span>
+            <div class="stepper">
+                <button type="button" id="onMinus" aria-label="-">−</button>
+                <span id="valueOn">–</span>
+                <button type="button" id="onPlus" aria-label="+">+</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var STATUS_ACTIVE = 102;
+    var STATUS_BATTERY_VALUE_STALE = 211;
+    var state = null;
+
+    document.getElementById('labelOff').textContent = translate('Switch-off threshold');
+    document.getElementById('labelOn').textContent = translate('Switch-on threshold');
+
+    function percent(value) {
+        return Math.round(value) + ' %';
+    }
+
+    function render() {
+        var fill = document.getElementById('fill');
+        var level = document.getElementById('level');
+        var charger = document.getElementById('charger');
+        var notice = document.getElementById('notice');
+
+        if (state.level === null) {
+            fill.style.height = '0';
+            level.textContent = '–';
+        } else {
+            fill.style.height = state.level + '%';
+            level.textContent = percent(state.level);
+        }
+        fill.classList.toggle('low', state.level !== null && state.level <= state.on);
+
+        document.getElementById('bolt').classList.toggle('visible', state.charging === true);
+        charger.classList.toggle('active', state.charging === true);
+        if (state.charging === null) {
+            charger.textContent = translate('Charger state unknown');
+        } else {
+            charger.textContent = state.charging ? translate('Charging') : translate('Not charging');
+        }
+
+        if (state.status === STATUS_BATTERY_VALUE_STALE) {
+            notice.textContent = translate('No current battery level');
+        } else if (state.status !== STATUS_ACTIVE) {
+            notice.textContent = translate('Charge control inactive');
+        } else {
+            notice.textContent = '';
+        }
+        notice.classList.toggle('visible', notice.textContent !== '');
+
+        document.getElementById('markerOff').style.bottom = state.off + '%';
+        document.getElementById('markerOn').style.bottom = state.on + '%';
+        document.getElementById('markerOffLabel').textContent = percent(state.off);
+        document.getElementById('markerOnLabel').textContent = percent(state.on);
+        document.getElementById('valueOff').textContent = percent(state.off);
+        document.getElementById('valueOn').textContent = percent(state.on);
+
+        document.getElementById('onMinus').disabled = state.on <= 0;
+        document.getElementById('onPlus').disabled = state.on + 1 >= state.off;
+        document.getElementById('offMinus').disabled = state.off - 1 <= state.on;
+        document.getElementById('offPlus').disabled = state.off >= 100;
+    }
+
+    function handleMessage(data) {
+        state = typeof data === 'string' ? JSON.parse(data) : data;
+        render();
+    }
+
+    function changeThreshold(ident, step) {
+        if (state === null) {
+            return;
+        }
+        var current = ident === 'SwitchOnThreshold' ? state.on : state.off;
+        requestAction(ident, current + step);
+    }
+
+    document.getElementById('onMinus').addEventListener('click', function () { changeThreshold('SwitchOnThreshold', -1); });
+    document.getElementById('onPlus').addEventListener('click', function () { changeThreshold('SwitchOnThreshold', 1); });
+    document.getElementById('offMinus').addEventListener('click', function () { changeThreshold('SwitchOffThreshold', -1); });
+    document.getElementById('offPlus').addEventListener('click', function () { changeThreshold('SwitchOffThreshold', 1); });
+</script>

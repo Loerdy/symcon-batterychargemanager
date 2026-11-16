@@ -44,6 +44,8 @@ class BatteryChargeController extends IPSModule
         $this->RegisterTimer(self::WATCHDOG_TIMER, 0, 'IPS_RequestAction(' . $this->InstanceID . ', "' . self::WATCHDOG_TIMER . '", true);');
 
         $this->RegisterMessage(0, IPS_KERNELSTARTED);
+
+        $this->SetVisualizationType(INSTANCE_VISUALIZATION_TYPE_HTML);
     }
 
     public function ApplyChanges(): void
@@ -65,6 +67,7 @@ class BatteryChargeController extends IPSModule
         }
 
         if (!$this->validateConfiguration()) {
+            $this->updateVisualization();
             return;
         }
 
@@ -73,15 +76,14 @@ class BatteryChargeController extends IPSModule
         $registrations = [
             [$batteryVariableID, VM_UPDATE],
             [$batteryVariableID, VM_DELETE],
+            [$chargingActorVariableID, VM_UPDATE],
             [$chargingActorVariableID, VM_DELETE]
         ];
-        if ($this->ReadPropertyBoolean('ShowChargingActorState')) {
-            $registrations[] = [$chargingActorVariableID, VM_UPDATE];
-        }
         foreach ($registrations as [$senderID, $message]) {
             if (!$this->RegisterMessage($senderID, $message)) {
                 $this->unregisterMonitoredVariableMessages();
                 $this->configurationError(self::STATUS_MESSAGE_REGISTRATION_FAILED, 'The configured variables could not be monitored.');
+                $this->updateVisualization();
                 return;
             }
         }
@@ -94,6 +96,18 @@ class BatteryChargeController extends IPSModule
         }
         $this->evaluateBatteryLevel();
         $this->scheduleBatteryWatchdog();
+        $this->updateVisualization();
+    }
+
+    public function GetVisualizationTile(): string
+    {
+        $html = file_get_contents(__DIR__ . '/module.html');
+        if ($html === false) {
+            return '';
+        }
+
+        // GetVisualizationTile is only called initially, so the current state is passed along with the HTML.
+        return $html . '<script>handleMessage(' . json_encode($this->getVisualizationState()) . ');</script>';
     }
 
     public function ResetThresholds(): void
@@ -105,6 +119,7 @@ class BatteryChargeController extends IPSModule
         if ($this->GetStatus() === IS_ACTIVE) {
             $this->evaluateBatteryLevel();
         }
+        $this->updateVisualization();
     }
 
     public function RequestAction($Ident, $Value): void
@@ -141,10 +156,12 @@ class BatteryChargeController extends IPSModule
             }
             $this->evaluateBatteryLevel();
             $this->scheduleBatteryWatchdog();
+            $this->updateVisualization();
             return;
         }
         if ($Message === VM_UPDATE && $SenderID === $chargingActorVariableID) {
             $this->updateChargingActorState();
+            $this->updateVisualization();
             return;
         }
 
@@ -155,12 +172,14 @@ class BatteryChargeController extends IPSModule
             $this->SetTimerInterval(self::WATCHDOG_TIMER, 0);
             $this->SetStatus(self::STATUS_BATTERY_VARIABLE_MISSING);
             $this->SendDebug('Configuration', 'The configured battery variable was deleted.', 0);
+            $this->updateVisualization();
             return;
         }
         if ($SenderID === $chargingActorVariableID) {
             $this->SetTimerInterval(self::WATCHDOG_TIMER, 0);
             $this->SetStatus(self::STATUS_ACTOR_VARIABLE_MISSING);
             $this->SendDebug('Configuration', 'The configured charger actuator was deleted.', 0);
+            $this->updateVisualization();
         }
     }
 
@@ -204,12 +223,14 @@ class BatteryChargeController extends IPSModule
         if ($this->GetStatus() === IS_ACTIVE) {
             $this->evaluateBatteryLevel();
         }
+        $this->updateVisualization();
     }
 
     private function rejectThresholdAction(string $message): void
     {
         $this->SendDebug('ThresholdAction', $message, 0);
         $this->LogMessage($message, KL_WARNING);
+        $this->updateVisualization();
         echo $message;
     }
 
@@ -409,6 +430,41 @@ class BatteryChargeController extends IPSModule
         if (IPS_VariableExists($chargingActorVariableID)) {
             $this->setChargingActorState($chargingActorVariableID, false);
         }
+        $this->updateVisualization();
+    }
+
+    private function getVisualizationState(): array
+    {
+        $batteryLevel = null;
+        $batteryVariableID = $this->ReadPropertyInteger('BatteryVariableID');
+        if ($batteryVariableID > 0 && IPS_VariableExists($batteryVariableID)) {
+            $value = GetValue($batteryVariableID);
+            if ((is_int($value) || is_float($value)) && is_finite((float) $value)) {
+                $batteryLevel = max(0.0, min(100.0, (float) $value));
+            }
+        }
+
+        $charging = null;
+        $chargingActorVariableID = $this->ReadPropertyInteger('ChargingActorVariableID');
+        if ($chargingActorVariableID > 0 && IPS_VariableExists($chargingActorVariableID)) {
+            $value = GetValue($chargingActorVariableID);
+            if (is_bool($value)) {
+                $charging = $value;
+            }
+        }
+
+        return [
+            'level'    => $batteryLevel,
+            'on'       => $this->GetValue('SwitchOnThreshold'),
+            'off'      => $this->GetValue('SwitchOffThreshold'),
+            'charging' => $charging,
+            'status'   => $this->GetStatus()
+        ];
+    }
+
+    private function updateVisualization(): void
+    {
+        $this->UpdateVisualizationValue(json_encode($this->getVisualizationState()));
     }
 
     private function updateChargingActorState(): void

@@ -34,9 +34,13 @@
       "caption": "Changed thresholds are copied to the threshold variables when applied. Values changed via these variables remain active until the thresholds are changed here again."
     },
     {
+      "type": "Label",
+      "caption": "Watchdog: switches the charger actuator off if the battery level is not updated within this time."
+    },
+    {
       "type": "NumberSpinner",
       "name": "BatteryWatchdogTimeout",
-      "caption": "Switch off charger if the battery level is not updated for (0 = disabled)",
+      "caption": "Watchdog timeout (0 = disabled)",
       "minimum": 0,
       "maximum": 1440,
       "suffix": " min"

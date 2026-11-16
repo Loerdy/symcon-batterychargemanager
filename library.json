@@ -4,7 +4,7 @@
   "name": "BatteryChargeManager",
   "url": "https://github.com/Loerdy/symcon-batterychargemanager",
   "compatibility": {
-    "version": "7.0"
+    "version": "7.1"
   },
   "version": "1.0",
   "build": 0,
