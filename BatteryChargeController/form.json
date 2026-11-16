@@ -3,20 +3,20 @@
     {
       "type": "SelectVariable",
       "name": "BatteryVariableID",
-      "caption": "Batteriestand",
+      "caption": "Battery level",
       "validVariableTypes": [1, 2]
     },
     {
       "type": "SelectVariable",
       "name": "ChargingActorVariableID",
-      "caption": "Ladeaktor",
+      "caption": "Charger actuator",
       "validVariableTypes": [0],
       "requiredAction": 1
     },
     {
       "type": "NumberSpinner",
       "name": "SwitchOnThreshold",
-      "caption": "Einschaltschwelle",
+      "caption": "Switch-on threshold",
       "minimum": 0,
       "maximum": 100,
       "suffix": " %"
@@ -24,27 +24,38 @@
     {
       "type": "NumberSpinner",
       "name": "SwitchOffThreshold",
-      "caption": "Ausschaltschwelle",
+      "caption": "Switch-off threshold",
       "minimum": 0,
       "maximum": 100,
       "suffix": " %"
     },
     {
+      "type": "Label",
+      "caption": "Changed thresholds are copied to the threshold variables when applied. Values changed via these variables remain active until the thresholds are changed here again."
+    },
+    {
+      "type": "NumberSpinner",
+      "name": "BatteryWatchdogTimeout",
+      "caption": "Switch off charger if the battery level is not updated for (0 = disabled)",
+      "minimum": 0,
+      "maximum": 1440,
+      "suffix": " min"
+    },
+    {
       "type": "CheckBox",
       "name": "ShowBatteryLevel",
-      "caption": "Batteriestand als Statusvariable anzeigen"
+      "caption": "Show battery level as status variable"
     },
     {
       "type": "CheckBox",
       "name": "ShowChargingActorState",
-      "caption": "Ladeaktorstatus als Statusvariable anzeigen"
+      "caption": "Show charger actuator state as status variable"
     }
   ],
   "actions": [
     {
       "type": "Button",
-      "caption": "Standardwerte wiederherstellen",
-      "confirm": "Einschaltschwelle auf 20 % und Ausschaltschwelle auf 80 % zurücksetzen?",
+      "caption": "Reset active thresholds to 20 % and 80 %",
       "onClick": "BCMC_ResetThresholds($id);"
     }
   ],
@@ -52,47 +63,57 @@
     {
       "code": 201,
       "icon": "error",
-      "caption": "Die ausgewählte Batterievariable existiert nicht."
+      "caption": "The selected battery variable does not exist."
     },
     {
       "code": 202,
       "icon": "error",
-      "caption": "Die Batterievariable muss vom Typ Integer oder Float sein."
+      "caption": "The battery variable must be of type Integer or Float."
     },
     {
       "code": 203,
       "icon": "error",
-      "caption": "Die ausgewählte Ladeaktorvariable existiert nicht."
+      "caption": "The selected charger actuator variable does not exist."
     },
     {
       "code": 204,
       "icon": "error",
-      "caption": "Die Ladeaktorvariable muss vom Typ Boolean sein."
+      "caption": "The charger actuator variable must be of type Boolean."
     },
     {
       "code": 205,
       "icon": "error",
-      "caption": "Die Ladeaktorvariable besitzt keine Action."
+      "caption": "The charger actuator variable has no action."
     },
     {
       "code": 206,
       "icon": "error",
-      "caption": "Die Schwellwerte müssen zwischen 0 und 100 % liegen."
+      "caption": "The thresholds must be between 0 and 100 %."
     },
     {
       "code": 207,
       "icon": "error",
-      "caption": "Die Einschaltschwelle muss kleiner als die Ausschaltschwelle sein."
+      "caption": "The switch-on threshold must be lower than the switch-off threshold."
     },
     {
       "code": 208,
       "icon": "error",
-      "caption": "Die Überwachung der konfigurierten Variablen konnte nicht eingerichtet werden."
+      "caption": "Monitoring of the configured variables could not be set up."
     },
     {
       "code": 209,
       "icon": "error",
-      "caption": "Eine bisher überwachte Variable konnte nicht abgemeldet werden."
+      "caption": "A previously monitored variable could not be unregistered."
+    },
+    {
+      "code": 210,
+      "icon": "error",
+      "caption": "The watchdog timeout must be between 0 and 1440 minutes."
+    },
+    {
+      "code": 211,
+      "icon": "error",
+      "caption": "The battery level is no longer being updated. The charger actuator has been switched off for safety."
     }
   ]
 }

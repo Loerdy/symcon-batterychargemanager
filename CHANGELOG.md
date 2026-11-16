@@ -6,6 +6,19 @@ The format is based on Keep a Changelog and this project uses semantic versionin
 
 ## [Unreleased]
 
+### Added
+
+- Add an optional battery level watchdog that switches the charger actuator off and sets an error status when the battery variable has not been updated within a configurable number of minutes.
+- Add a German translation of the configuration form, status messages, variable names, and log messages through `locale.json`.
+- Write a warning to the message log when a switching command for the charger actuator fails.
+
+### Changed
+
+- Defer the evaluation during IP-Symcon startup until the kernel is ready (`IPS_KERNELSTARTED`).
+- Store the active thresholds in the threshold variables instead of writing them back to the module configuration, as required by the Module Store guidelines. Thresholds changed in the configuration form are copied to the variables when applied.
+- `ResetThresholds()` and the configuration button now reset the active thresholds without changing the module configuration.
+- Use English as the base language for all texts in the module.
+
 ## [1.0.0] - 2026-10-01
 
 ### Added

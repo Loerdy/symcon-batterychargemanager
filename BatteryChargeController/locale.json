@@ -1,0 +1,33 @@
+{
+  "translations": {
+    "de": {
+      "Battery level": "Batteriestand",
+      "Charger actuator": "Ladeaktor",
+      "Switch-on threshold": "Einschaltschwelle",
+      "Switch-off threshold": "Ausschaltschwelle",
+      "Changed thresholds are copied to the threshold variables when applied. Values changed via these variables remain active until the thresholds are changed here again.": "Geänderte Schwellwerte werden beim Übernehmen in die Schwellwert-Variablen kopiert. Über diese Variablen geänderte Werte bleiben aktiv, bis die Schwellwerte hier erneut geändert werden.",
+      "Switch off charger if the battery level is not updated for (0 = disabled)": "Ladeaktor ausschalten, wenn der Batteriestand nicht aktualisiert wird seit (0 = deaktiviert)",
+      "Show battery level as status variable": "Batteriestand als Statusvariable anzeigen",
+      "Show charger actuator state as status variable": "Ladeaktorstatus als Statusvariable anzeigen",
+      "Reset active thresholds to 20 % and 80 %": "Aktive Schwellwerte auf 20 % und 80 % zurücksetzen",
+      "The selected battery variable does not exist.": "Die ausgewählte Batterievariable existiert nicht.",
+      "The battery variable must be of type Integer or Float.": "Die Batterievariable muss vom Typ Integer oder Float sein.",
+      "The selected charger actuator variable does not exist.": "Die ausgewählte Ladeaktorvariable existiert nicht.",
+      "The charger actuator variable must be of type Boolean.": "Die Ladeaktorvariable muss vom Typ Boolean sein.",
+      "The charger actuator variable has no action.": "Die Ladeaktorvariable besitzt keine Action.",
+      "The thresholds must be between 0 and 100 %.": "Die Schwellwerte müssen zwischen 0 und 100 % liegen.",
+      "The switch-on threshold must be lower than the switch-off threshold.": "Die Einschaltschwelle muss kleiner als die Ausschaltschwelle sein.",
+      "Monitoring of the configured variables could not be set up.": "Die Überwachung der konfigurierten Variablen konnte nicht eingerichtet werden.",
+      "A previously monitored variable could not be unregistered.": "Eine bisher überwachte Variable konnte nicht abgemeldet werden.",
+      "The watchdog timeout must be between 0 and 1440 minutes.": "Die Watchdog-Zeit muss zwischen 0 und 1440 Minuten liegen.",
+      "The battery level is no longer being updated. The charger actuator has been switched off for safety.": "Der Batteriestand wird nicht mehr aktualisiert. Der Ladeaktor wurde zur Sicherheit ausgeschaltet.",
+      "The battery level is being updated again. Charge control has resumed.": "Der Batteriestand wird wieder aktualisiert. Die Ladesteuerung wurde fortgesetzt.",
+      "The battery level has not been updated for at least %d minutes. The charger actuator is switched off for safety.": "Der Batteriestand wurde seit mindestens %d Minuten nicht aktualisiert. Der Ladeaktor wird zur Sicherheit ausgeschaltet.",
+      "The threshold cannot be set to %d %%. Allowed values are between 0 %% and 100 %%.": "Der Schwellwert kann nicht auf %d %% gesetzt werden. Zulässig sind Werte zwischen 0 %% und 100 %%.",
+      "The switch-on threshold cannot be set to %d %%. It must be lower than the switch-off threshold of %d %%.": "Die Einschaltschwelle kann nicht auf %d %% gesetzt werden. Sie muss kleiner als die Ausschaltschwelle von %d %% sein.",
+      "The switch-off threshold cannot be set to %d %%. It must be higher than the switch-on threshold of %d %%.": "Die Ausschaltschwelle kann nicht auf %d %% gesetzt werden. Sie muss größer als die Einschaltschwelle von %d %% sein.",
+      "The charger actuator could not be switched on.": "Der Ladeaktor konnte nicht eingeschaltet werden.",
+      "The charger actuator could not be switched off.": "Der Ladeaktor konnte nicht ausgeschaltet werden."
+    }
+  }
+}

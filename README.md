@@ -20,10 +20,11 @@ Eine Instanz verwaltet genau ein Akkugerät. Konfiguriert werden:
 - Ladeaktor als Boolean-Variable mit Action
 - Einschaltschwelle, standardmäßig 20 %
 - Ausschaltschwelle, standardmäßig 80 %
+- optionale Watchdog-Zeit in Minuten, standardmäßig 0 (deaktiviert)
 
-Die beiden Schwellwerte werden zusätzlich als bedienbare Prozentvariablen unter der Instanz bereitgestellt. Änderungen über diese Variablen werden unmittelbar in die persistente Modulkonfiguration übernommen und für die Ladesteuerung verwendet.
+Die beiden Schwellwerte werden zusätzlich als bedienbare Prozentvariablen unter der Instanz bereitgestellt. Diese Variablen enthalten die aktiven Schwellwerte, die die Ladesteuerung verwendet. Änderungen über die Variablen wirken sofort und bleiben auch nach einem Neustart erhalten. Die Schwellwerte im Konfigurationsformular werden nur dann in die Variablen kopiert, wenn sie im Formular geändert und übernommen werden. Das Modul verändert seine eigene Konfiguration nicht selbst.
 
-Über die Instanzkonfiguration können beide Schwellwerte gemeinsam auf die Standardwerte 20 % und 80 % zurückgesetzt werden. Die Werte werden anschließend einmal übernommen und der aktuelle Batteriestand wird unmittelbar neu ausgewertet.
+Über die Instanzkonfiguration können die aktiven Schwellwerte gemeinsam auf die Standardwerte 20 % und 80 % zurückgesetzt werden. Der aktuelle Batteriestand wird anschließend unmittelbar neu ausgewertet. Die Werte im Konfigurationsformular bleiben dabei unverändert.
 
 Optional können ein nicht bedienbarer Batteriestatus und ein nicht bedienbarer Ladeaktorstatus unter der Instanz angezeigt werden. Der Batteriestatus ist eine Integer-Variable mit dem IP-Symcon-Standardprofil `~Battery.100`. Float-Werte der konfigurierten Batterievariable werden für diese Anzeige mathematisch auf volle Prozent gerundet; die Ladesteuerung wertet weiterhin den ursprünglichen präzisen Wert aus. Der Ladeaktorstatus verwendet das IP-Symcon-Systemprofil `~Switch`, folgt dem tatsächlichen Zustand der externen Boolean-Variable und berücksichtigt auch externe Zustandsänderungen.
 
@@ -33,7 +34,13 @@ Die Batterievariable wird ereignisbasiert über die dokumentierte IP-Symcon-Nach
 
 Ungültige Änderungen der Schwellwerte werden abgelehnt; der bisherige gültige Wert bleibt erhalten. Dauerhafte Konfigurationsfehler zeigt das Konfigurationsformular mit einer spezifischen Statusmeldung für die jeweilige Ursache an.
 
-Nach dem Übernehmen der Konfiguration sowie nach einem Neustart wertet das Modul den aktuellen Batteriestand einmal aus. Ein Schaltbefehl wird nur gesendet, wenn der Ladeaktor noch nicht den gewünschten Zustand hat.
+Nach dem Übernehmen der Konfiguration sowie nach einem Neustart wertet das Modul den aktuellen Batteriestand einmal aus. Beim Start von IP-Symcon geschieht dies erst, wenn der Kernel vollständig bereit ist (`IPS_KERNELSTARTED`). Ein Schaltbefehl wird nur gesendet, wenn der Ladeaktor noch nicht den gewünschten Zustand hat. Schlägt ein Schaltbefehl fehl, wird eine Warnung in das Meldungsprotokoll geschrieben.
+
+### Watchdog für den Batteriestand
+
+Optional kann eine Watchdog-Zeit zwischen 1 und 1440 Minuten konfiguriert werden. Wird die Batterievariable in dieser Zeit nicht aktualisiert, zum Beispiel weil das Gerät keine Verbindung mehr hat, schaltet das Modul den Ladeaktor zur Sicherheit aus. Die Instanz zeigt dann einen Fehlerstatus an und schreibt eine Warnung in das Meldungsprotokoll. Sobald die Batterievariable wieder aktualisiert wird, kehrt die Instanz in den aktiven Zustand zurück und setzt die normale Ladesteuerung fort.
+
+Maßgeblich ist der Zeitpunkt der letzten Aktualisierung der Batterievariable, nicht der letzten Wertänderung. War IP-Symcon länger als die Watchdog-Zeit ausgeschaltet, greift der Watchdog deshalb direkt nach dem Start, bis das Gerät wieder einen Wert meldet. Für die Überwachung wird ein Timer verwendet, der nur zum berechneten Ablaufzeitpunkt auslöst; ein zyklisches Abfragen des Batteriestands findet nicht statt. Bei einer Watchdog-Zeit von 0 ist die Funktion deaktiviert.
 
 Wird die konfigurierte Batterievariable oder der Ladeaktor während des Betriebs gelöscht, wechselt die Modulinstanz in einen Fehlerzustand und führt keine weitere Schaltung aus.
 
@@ -84,7 +91,7 @@ Der Skriptcode ermittelt die zugehörige Instanz über `IPS_GetParent($_IPS['SEL
 
 ### 4. Funktion
 
-Beim Ausführen ruft das Skript `BCMC_ResetThresholds($instanceID)` auf. Dadurch werden die Einschaltschwelle auf 20 % und die Ausschaltschwelle auf 80 % zurückgesetzt. Anschließend wird die Modulkonfiguration genau einmal angewendet.
+Beim Ausführen ruft das Skript `BCMC_ResetThresholds($instanceID)` auf. Dadurch werden die aktive Einschaltschwelle auf 20 % und die aktive Ausschaltschwelle auf 80 % zurückgesetzt und der aktuelle Batteriestand neu ausgewertet. Die Modulkonfiguration wird dabei nicht verändert.
 
 ### 5. WebFront und Visualisierung
 
@@ -133,10 +140,11 @@ Each instance manages exactly one battery-powered device. The following settings
 - Boolean charger variable with an action
 - switch-on threshold, 20% by default
 - switch-off threshold, 80% by default
+- optional watchdog timeout in minutes, 0 (disabled) by default
 
-Both thresholds are also provided as controllable percentage variables below the instance. Changes made through these variables are immediately stored in the persistent module configuration and used by the charge controller.
+Both thresholds are also provided as controllable percentage variables below the instance. These variables hold the active thresholds used by the charge controller. Changes made through the variables take effect immediately and persist across restarts. The thresholds in the configuration form are copied to the variables only when they are changed in the form and applied. The module never changes its own configuration.
 
-Both thresholds can be reset together to their defaults of 20% and 80% through the instance configuration. The values are then applied once and the current battery level is evaluated immediately.
+The active thresholds can be reset together to their defaults of 20% and 80% through the instance configuration. The current battery level is then evaluated immediately. The values in the configuration form remain unchanged.
 
 An output-only battery status and an output-only charger actuator status can be displayed below the instance independently. The battery status is an Integer variable using the IP-Symcon standard profile `~Battery.100`. Float values from the configured battery variable are mathematically rounded to whole percentages for this display; the charge controller continues to evaluate the original precise value. The charger actuator status uses the IP-Symcon system profile `~Switch`, follows the actual state of the external Boolean variable, and also reflects external state changes.
 
@@ -146,7 +154,13 @@ The controller monitors the battery variable through the documented IP-Symcon `V
 
 Invalid threshold changes are rejected and the previous valid value is retained. The configuration form reports persistent configuration errors with a specific status message for the respective cause.
 
-After applying the configuration and after a restart, the module evaluates the current battery level once. A switching command is sent only when the charger actuator does not already have the desired state.
+After applying the configuration and after a restart, the module evaluates the current battery level once. During IP-Symcon startup, this happens only after the kernel is fully ready (`IPS_KERNELSTARTED`). A switching command is sent only when the charger actuator does not already have the desired state. If a switching command fails, a warning is written to the message log.
+
+### Battery Level Watchdog
+
+Optionally, a watchdog timeout between 1 and 1440 minutes can be configured. If the battery variable is not updated within this time, for example because the device has lost its connection, the module switches the charger actuator off for safety. The instance then shows an error status and writes a warning to the message log. As soon as the battery variable is updated again, the instance returns to the active state and resumes normal charge control.
+
+The time of the last update of the battery variable is used, not the time of the last value change. If IP-Symcon was shut down for longer than the watchdog timeout, the watchdog therefore triggers right after startup until the device reports a value again. Monitoring uses a timer that fires only at the calculated expiry time; the battery level is not polled periodically. A watchdog timeout of 0 disables the function.
 
 If the configured battery variable or charger actuator is deleted during operation, the module instance enters an error state and performs no further switching.
 
@@ -197,7 +211,7 @@ The script determines its associated instance through `IPS_GetParent($_IPS['SELF
 
 ### 4. Function
 
-When executed, the script calls `BCMC_ResetThresholds($instanceID)`. This resets the switch-on threshold to 20% and the switch-off threshold to 80%. The module configuration is then applied exactly once.
+When executed, the script calls `BCMC_ResetThresholds($instanceID)`. This resets the active switch-on threshold to 20% and the active switch-off threshold to 80% and evaluates the current battery level again. The module configuration is not changed.
 
 ### 5. WebFront and visualization
 
