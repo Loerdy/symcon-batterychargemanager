@@ -11,7 +11,7 @@ The format is based on Keep a Changelog and this project uses semantic versionin
 - Add an optional battery level watchdog that switches the charger actuator off and sets an error status when the battery variable has not been updated within a configurable number of minutes.
 - Add a German translation of the configuration form, status messages, variable names, and log messages through `locale.json`.
 - Write a warning to the message log when a switching command for the charger actuator fails.
-- Add a visualization tile (HTML-SDK) showing an upright battery with fill level, threshold markers, battery level, and charger state, with buttons to adjust the active thresholds.
+- Add a visualization tile (HTML-SDK) showing an upright battery with fill level, threshold markers, battery level, and charger state, with buttons to adjust the active thresholds. The layout scales with the tile size and hides less important elements on small tiles.
 
 ### Changed
 

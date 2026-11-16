@@ -36,6 +36,8 @@ Die Instanz bringt eine eigene Kachel für die Visualisierung mit. Sie zeigt ein
 
 Die beiden aktiven Schwellwerte können direkt in der Kachel über die Schaltflächen − und + in 1-%-Schritten angepasst werden. Es gelten dieselben Regeln wie für die Schwellwert-Variablen; Schaltflächen, die zu einer ungültigen Kombination führen würden, sind deaktiviert. Greift der Watchdog oder ist die Instanz nicht aktiv, zeigt die Kachel einen Hinweis an.
 
+Die Darstellung passt sich der Kachelgröße an. Bei kleineren Kacheln werden weniger wichtige Elemente schrittweise ausgeblendet: zuerst die Schaltflächen für die Schwellwerte, danach die Beschriftung der Markierungen und der Zustand des Ladeaktors. Batterie und Batteriestand bleiben immer sichtbar. In der Vollbildansicht der Kachel stehen alle Elemente zur Verfügung.
+
 Der Zustand des Ladeaktors wird dafür unabhängig von der Option für die Statusvariable ereignisbasiert über `VM_UPDATE` überwacht.
 
 Die Batterievariable wird ereignisbasiert über die dokumentierte IP-Symcon-Nachricht `VM_UPDATE` überwacht. Ein zyklisches Polling findet nicht statt. Bei einem Batteriestand kleiner oder gleich der Einschaltschwelle wird der Ladeaktor eingeschaltet. Bei einem Batteriestand größer oder gleich der Ausschaltschwelle wird er ausgeschaltet. Zwischen den Schwellen bleibt sein Zustand unverändert. Diese Hysterese verhindert unnötiges Hin- und Herschalten; die Einschaltschwelle muss deshalb kleiner als die Ausschaltschwelle sein.
@@ -163,6 +165,8 @@ Disabled optional status variables are removed completely instead of merely bein
 The instance provides its own tile for the visualization. It shows an upright battery whose fill level matches the current battery level. At or below the switch-on threshold, the fill is shown in red, otherwise in green. Dashed markers show the active switch-on and switch-off thresholds at the corresponding height of the battery. Next to the battery, the battery level in percent and the state of the charger actuator are displayed; while the charger actuator is switched on, a lightning symbol additionally appears inside the battery.
 
 Both active thresholds can be adjusted directly in the tile using the − and + buttons in steps of 1%. The same rules apply as for the threshold variables; buttons that would lead to an invalid combination are disabled. If the watchdog has triggered or the instance is not active, the tile displays a notice.
+
+The layout adapts to the tile size. On smaller tiles, less important elements are hidden step by step: first the threshold buttons, then the marker labels and the charger actuator state. The battery and the battery level always remain visible. All elements are available in the fullscreen view of the tile.
 
 For this purpose, the state of the charger actuator is monitored event-based via `VM_UPDATE`, independently of the status variable option.
 

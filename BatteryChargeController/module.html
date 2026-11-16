@@ -15,49 +15,49 @@
         --warning: #e8a317;
     }
 
+    /* The tile scales with its own size; the top padding keeps the area of the tile title free. */
     .tile {
+        container: tile / size;
         box-sizing: border-box;
         display: flex;
+        align-items: center;
         gap: 6%;
-        align-items: stretch;
         height: 100%;
-        padding: 8px;
+        padding: 30px 10px 8px 10px;
     }
 
     .battery-wrap {
-        position: relative;
+        --battery-width: min(24cqw, 42cqh);
         display: flex;
         flex-direction: column;
         align-items: center;
         flex: 0 0 auto;
-        height: 100%;
-        padding-right: 2.6em;
+        padding-right: 3.4em;
+        font-size: clamp(8px, min(5.5cqh, 4cqw), 12px);
     }
 
     .cap {
-        width: 36%;
-        height: 5%;
-        min-height: 4px;
+        width: calc(var(--battery-width) * 0.36);
+        height: calc(var(--battery-width) * 0.1);
         background: var(--outline);
         border-radius: 3px 3px 0 0;
     }
 
     .body {
         position: relative;
-        flex: 0 0 auto;
-        height: 95%;
+        width: var(--battery-width);
         aspect-ratio: 9 / 20;
-        border: 3px solid var(--outline);
-        border-radius: 8px;
+        border: 2px solid var(--outline);
+        border-radius: calc(var(--battery-width) * 0.12);
         background: var(--empty);
         box-sizing: border-box;
     }
 
     .inner {
         position: absolute;
-        inset: 3px;
+        inset: 2px;
         overflow: hidden;
-        border-radius: 4px;
+        border-radius: calc(var(--battery-width) * 0.07);
     }
 
     .fill {
@@ -78,7 +78,7 @@
         position: absolute;
         left: 50%;
         top: 50%;
-        width: 40%;
+        width: 45%;
         transform: translate(-50%, -50%);
         fill: #ffffff;
         stroke: rgba(0, 0, 0, 0.35);
@@ -92,8 +92,8 @@
 
     .marker {
         position: absolute;
-        left: -3px;
-        right: -3px;
+        left: -2px;
+        right: -2px;
         height: 0;
         border-top: 2px dashed var(--marker);
         transition: bottom 0.3s ease;
@@ -103,8 +103,7 @@
         position: absolute;
         left: 100%;
         transform: translateY(-50%);
-        margin-left: 6px;
-        font-size: 0.75em;
+        margin-left: 0.4em;
         color: var(--marker);
         white-space: nowrap;
         font-variant-numeric: tabular-nums;
@@ -114,21 +113,26 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
-        gap: 6px;
+        gap: 0.4em;
         min-width: 0;
         flex: 1;
+        overflow: hidden;
+        font-size: clamp(10px, min(7cqh, 5.5cqw), 14px);
     }
 
     .level {
-        font-size: 2em;
+        font-size: clamp(14px, min(20cqh, 13cqw), 40px);
         font-weight: 600;
         line-height: 1.1;
+        white-space: nowrap;
         font-variant-numeric: tabular-nums;
     }
 
     .charger {
-        font-size: 0.95em;
         opacity: 0.7;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .charger.active {
@@ -138,7 +142,6 @@
     }
 
     .notice {
-        font-size: 0.85em;
         color: var(--warning);
         display: none;
     }
@@ -147,12 +150,17 @@
         display: block;
     }
 
+    .thresholds {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4em;
+    }
+
     .threshold {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
         gap: 2px;
-        font-size: 0.85em;
     }
 
     .threshold-label {
@@ -166,8 +174,7 @@
     .stepper {
         display: flex;
         align-items: center;
-        gap: 4px;
-        flex: 0 0 auto;
+        gap: 0.3em;
     }
 
     .stepper span {
@@ -193,6 +200,28 @@
         opacity: 0.35;
         cursor: default;
     }
+
+    /* Hide less important parts step by step when the tile gets smaller. */
+    @container tile (max-width: 200px) or (max-height: 165px) {
+        .thresholds {
+            display: none;
+        }
+    }
+
+    @container tile (max-width: 150px) or (max-height: 70px) {
+        .battery-wrap {
+            padding-right: 0;
+        }
+
+        .marker-label,
+        .charger {
+            display: none;
+        }
+
+        .level {
+            font-size: clamp(14px, 38cqh, 22px);
+        }
+    }
 </style>
 
 <div class="tile">
@@ -213,20 +242,22 @@
         <div class="level" id="level">–</div>
         <div class="charger" id="charger"></div>
         <div class="notice" id="notice"></div>
-        <div class="threshold">
-            <span class="threshold-label" id="labelOff"></span>
-            <div class="stepper">
-                <button type="button" id="offMinus" aria-label="-">−</button>
-                <span id="valueOff">–</span>
-                <button type="button" id="offPlus" aria-label="+">+</button>
+        <div class="thresholds">
+            <div class="threshold">
+                <span class="threshold-label" id="labelOff"></span>
+                <div class="stepper">
+                    <button type="button" id="offMinus" aria-label="-">−</button>
+                    <span id="valueOff">–</span>
+                    <button type="button" id="offPlus" aria-label="+">+</button>
+                </div>
             </div>
-        </div>
-        <div class="threshold">
-            <span class="threshold-label" id="labelOn"></span>
-            <div class="stepper">
-                <button type="button" id="onMinus" aria-label="-">−</button>
-                <span id="valueOn">–</span>
-                <button type="button" id="onPlus" aria-label="+">+</button>
+            <div class="threshold">
+                <span class="threshold-label" id="labelOn"></span>
+                <div class="stepper">
+                    <button type="button" id="onMinus" aria-label="-">−</button>
+                    <span id="valueOn">–</span>
+                    <button type="button" id="onPlus" aria-label="+">+</button>
+                </div>
             </div>
         </div>
     </div>
